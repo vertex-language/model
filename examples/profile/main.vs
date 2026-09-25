@@ -5,10 +5,11 @@ package main
 import "fs"
 import "gpu"
 import "model/llama"
+import "os/env"
 import "time"
 
 for d in [gpu.Default()] {
-    let m = try await llama.Model.Load(fs.Path("testdata/stories15M-q4_0.gguf"), on: d)
+    let m = try await llama.Model.Load(fs.Path(env.Get("MODEL") ?? "testdata/stories15M-q4_0.gguf"), on: d)
     _ = try await m.Forward(1, position: 0).Download()
     let n = 50
     var encode: int64 = 0, run: int64 = 0, read: int64 = 0, pick: int64 = 0

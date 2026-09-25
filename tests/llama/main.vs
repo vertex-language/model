@@ -8,7 +8,8 @@
 // rounding). So that first step is also checked against float64 math
 // written out here, tightly, and llama.cpp's logits loosely: 0.01 for the
 // f32 model, and for the q4_0 model 0.25, since llama.cpp's CPU path also
-// rounds each activation to q8_0 before its dot product with q4_0 weights.
+// rounds each activation to q8_0 before its dot product with q4_0 weights
+// (and to q8_K before q4_K and q6_K ones: 0.5 for the Q4_K_M model).
 package main
 
 import "fs"
@@ -70,7 +71,7 @@ func check(_ ok: bool, _ what: string) {
     if !ok { failures += 1 }
 }
 
-for (name, tolerance) in [("stories260K", 0.01), ("stories15M-q4_0", 0.25)] {
+for (name, tolerance) in [("stories260K", 0.01), ("stories15M-q4_0", 0.25), ("stories110M-q4_k_m", 0.5)] {
     let golden = try fs.ReadText(fs.Path("tests/llama/golden/\(name).txt")).split(separator: "\n")
     var steps: [(int, [(int, float64)])] = []
     var greedy: [int] = []

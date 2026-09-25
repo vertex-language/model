@@ -1,4 +1,5 @@
-// A quantized model's tensors decoded on every device by gpu/dtype, and
+// Quantized models' tensors -- q4_0 and q8_0, and the k-quants q4_K and
+// q6_K of a Q4_K_M file -- decoded on every device by gpu/dtype, and
 // compared bit for bit with what llama.cpp's own dequantizer makes of them
 // (tests/oracle/gguf_dump.cpp -dequant): decoding is exact, so equal.
 package main
@@ -39,21 +40,25 @@ func decode(_ d: gpu.Device, _ f: gguf.File, _ t: gguf.TensorInfo) async throws 
     switch t.Type {
     case .Q4_0: try await dtype.Dequantize(w, dtype.Q4_0(), count: t.Count, into: y)
     case .Q8_0: try await dtype.Dequantize(w, dtype.Q8_0(), count: t.Count, into: y)
+    case .Q4_K: try await dtype.Dequantize(w, dtype.Q4_K(), count: t.Count, into: y)
+    case .Q6_K: try await dtype.Dequantize(w, dtype.Q6_K(), count: t.Count, into: y)
     default: throw gguf.FormatError.malformed("no decoder for \(t.Type.Name)")
     }
     return try await y.Download()
 }
 
-let f = try gguf.Open(fs.Path("testdata/stories15M-q4_0.gguf"))
-let golden = try fs.ReadText(fs.Path("tests/quant/golden/stories15M-q4_0.dequant.txt"))
-for line in golden.split(separator: "\n") {
-    let parts = line.split(separator: " ")
-    let name = String(parts[1])
-    let want = String(parts[3])
-    let t = f.Tensor(name)!
-    for d in [gpu.CPU(), gpu.Default()] {
-        let got = "fnv:" + hex(hash(try await decode(d, f, t)))
-        check(got == want, "\(d.Name) \(name) \(t.Type.Name) x\(t.Count)")
+for name in ["stories15M-q4_0", "stories110M-q4_k_m"] {
+    let f = try gguf.Open(fs.Path("testdata/\(name).gguf"))
+    let golden = try fs.ReadText(fs.Path("tests/quant/golden/\(name).dequant.txt"))
+    for line in golden.split(separator: "\n") {
+        let parts = line.split(separator: " ")
+        let tensorName = String(parts[1])
+        let want = String(parts[3])
+        let t = f.Tensor(tensorName)!
+        for d in [gpu.CPU(), gpu.Default()] {
+            let got = "fnv:" + hex(hash(try await decode(d, f, t)))
+            check(got == want, "\(d.Name) \(name) \(tensorName) \(t.Type.Name) x\(t.Count)")
+        }
     }
 }
 print(failures == 0 ? "all passed" : "\(failures) failed")

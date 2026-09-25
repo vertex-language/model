@@ -134,6 +134,10 @@ public final class File {
         return Tensors[i]
     }
 
+    /// Mapping is the file's bytes in memory, which tensors are read from
+    /// in place: a device can take all of it as one buffer (gpu.Device.Wrap).
+    public var Mapping: mmap.Mapping { return _map }
+
     /// Bytes is where a tensor's bytes lie, in the mapping: valid as long
     /// as this File is.
     public func Bytes(_ t: TensorInfo) -> UnsafePointer<uint8> {

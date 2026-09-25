@@ -143,6 +143,11 @@ public final class Model {
     public static func Load(_ path: fs.Path, on d: gpu.Device) async throws -> Model {
         let f = try gguf.Open(path)
         let c = try llama.Config.Read(f)
+        // The whole mapped file is one buffer the device reads in place, and
+        // each weight a slice of it: the model costs its size once, and
+        // loading copies nothing. Where the device will not take it, each
+        // weight is copied in instead.
+        let whole: gpu.Buffer<uint8>? = try? d.Wrap(UnsafeMutableRawPointer(mutating: f.Mapping.Bytes!), bytes: f.Mapping.Count, keeping: f)
         func weight(_ name: string) async throws -> tensor.Tensor {
             guard let t = f.Tensor(name) else {
                 throw LoadError.unsupported("no tensor \(name)")
@@ -152,22 +157,27 @@ public final class Model {
             case .F32: type = .F32
             case .Q4_0: type = .Q4_0
             case .Q8_0: type = .Q8_0
+            case .Q4_K: type = .Q4_K
+            case .Q6_K: type = .Q6_K
             default: throw LoadError.unsupported("\(name) is \(t.Type.Name), which this does not run yet")
             }
             // GGUF lists dimensions innermost first; a tensor, outermost.
+            if let all = whole {
+                return try tensor.Tensor(shape: t.Shape.reversed(), dtype: type, storage: all.Slice(from: t.Offset, count: t.Size))
+            }
             return try await tensor.Tensor.FromBytes(f.Bytes(t), shape: t.Shape.reversed(), dtype: type, on: d)
         }
         let embed = try nn.Embedding(try await weight("token_embd.weight"))
         var blocks: [Block] = []
         for i in 0..<c.Layers {
             let p = "blk.\(i)."
-            let attention = try await nn.Attention.Fused(
+            let attention = try nn.Attention.Fused(
                 q: try nn.Linear(try await weight(p + "attn_q.weight")),
                 k: try nn.Linear(try await weight(p + "attn_k.weight")),
                 v: try nn.Linear(try await weight(p + "attn_v.weight")),
                 o: try nn.Linear(try await weight(p + "attn_output.weight")),
                 heads: c.Heads, kvHeads: c.KVHeads, ropeBase: c.RopeBase)
-            let mlp = try await nn.GatedMLP.Fused(
+            let mlp = try nn.GatedMLP.Fused(
                 gate: try nn.Linear(try await weight(p + "ffn_gate.weight")),
                 up: try nn.Linear(try await weight(p + "ffn_up.weight")),
                 down: try nn.Linear(try await weight(p + "ffn_down.weight")),
