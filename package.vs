@@ -13,6 +13,9 @@ let package = Package(
         .executable(name: "test-gguf", targets: ["test_gguf"]),
         .executable(name: "test-quant", targets: ["test_quant"]),
         .executable(name: "test-llama", targets: ["test_llama"]),
+        .executable(name: "bench", targets: ["bench"]),
+        .executable(name: "profile", targets: ["profile"]),
+        .executable(name: "ops", targets: ["ops"]),
     ],
     targets: [
         // GGUF: llama.cpp's weight format, metadata and tensors, mapped.
@@ -32,6 +35,24 @@ let package = Package(
             dependencies: ["llama"],
             path: "tests/llama",
             exclude: ["golden"]
+        ),
+        // Decode speed: load time and tokens a second, on each device.
+        .executableTarget(
+            name: "bench",
+            dependencies: ["llama"],
+            path: "examples/bench"
+        ),
+        // Where a decoded token's time goes.
+        .executableTarget(
+            name: "profile",
+            dependencies: ["llama"],
+            path: "examples/profile"
+        ),
+        // Each operation of a decoded token alone.
+        .executableTarget(
+            name: "ops",
+            dependencies: ["llama"],
+            path: "examples/ops"
         ),
         .executableTarget(
             name: "test_gguf",

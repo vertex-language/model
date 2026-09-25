@@ -161,13 +161,13 @@ public final class Model {
         var blocks: [Block] = []
         for i in 0..<c.Layers {
             let p = "blk.\(i)."
-            let attention = try nn.Attention(
+            let attention = try await nn.Attention.Fused(
                 q: try nn.Linear(try await weight(p + "attn_q.weight")),
                 k: try nn.Linear(try await weight(p + "attn_k.weight")),
                 v: try nn.Linear(try await weight(p + "attn_v.weight")),
                 o: try nn.Linear(try await weight(p + "attn_output.weight")),
                 heads: c.Heads, kvHeads: c.KVHeads, ropeBase: c.RopeBase)
-            let mlp = try nn.GatedMLP(
+            let mlp = try await nn.GatedMLP.Fused(
                 gate: try nn.Linear(try await weight(p + "ffn_gate.weight")),
                 up: try nn.Linear(try await weight(p + "ffn_up.weight")),
                 down: try nn.Linear(try await weight(p + "ffn_down.weight")),
@@ -190,12 +190,12 @@ public final class Model {
         try await Embed.Lookup(token, into: _x)
         for i in 0..<Blocks.count {
             let b = Blocks[i]
+            // Each sublayer's output is added to the residual stream by the
+            // projection that makes it.
             try await b.AttnNorm.Forward(_x, into: _h)
-            try await b.Attention.Forward(_h, position: position, cache: _caches[i], into: _h)
-            try await tensor.Add(_x, _h, into: _x)
+            try await b.Attention.Forward(_h, position: position, cache: _caches[i], into: _x, accumulate: true)
             try await b.FFNNorm.Forward(_x, into: _h)
-            try await b.MLP.Forward(_h, into: _h)
-            try await tensor.Add(_x, _h, into: _x)
+            try await b.MLP.Forward(_h, into: _x, accumulate: true)
         }
         try await Norm.Forward(_x, into: _h)
         try await Output.Forward(_h, into: _logits)

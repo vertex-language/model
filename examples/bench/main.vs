@@ -1,0 +1,25 @@
+// Decode speed: a model's load time, and the tokens a second it generates
+// greedily after a short prompt, on each device.
+//
+//   vsc run bench [model.gguf] [tokens]
+package main
+
+import "fs"
+import "gpu"
+import "model/llama"
+import "os/process"
+import "time"
+
+let args = process.Args
+let path = args.count > 1 ? args[1] : "testdata/stories15M-q4_0.gguf"
+let n = args.count > 2 ? int(args[2]) ?? 100 : 100
+for d in [gpu.Default(), gpu.CPU()] {
+    var t = time.Instant.Now()
+    let m = try await llama.Model.Load(fs.Path(path), on: d)
+    let load = t.Elapsed()
+    t = time.Instant.Now()
+    let out = try await m.Generate("Once upon a time", tokens: n)
+    let gen = t.Elapsed()
+    let perSecond = float64(out.count + 5) / gen.AsSeconds()
+    print("\(d.Name): load \(load), \(out.count) tokens in \(gen): \(int(perSecond)) tokens/s")
+}

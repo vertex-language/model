@@ -11,6 +11,22 @@ Every package it needs is built as the path reaches it.
 | `model/llama` | The Llama family (`general.architecture` `llama`): `Config.Read` from a GGUF's `llama.*` keys, `Model.Load(path, on: device)` (weights by their GGUF names, a tied head when there is no `output.weight`, the tokenizer from `tokenizer.ggml.*`), `Forward(token, position)` to logits with a KV cache, and greedy `Generate`. f32, Q4_0 and Q8_0 weights; grouped-query attention | `test-llama`: "Once upon a time" through both test models on the CPU device and Metal. The 32 greedy tokens of each match llama.cpp's exactly. Logits are within 0.01 (f32) and 0.25 (q4_0) of llama.cpp's, and the f32 model's first step is within 1e-4 of float64 math (2.1e-6 in fact; llama.cpp's is 2.5e-4 off) |
 | (with `gpu/dtype`) | Every quantized tensor of a GGUF file decoded on a device: `dtype.Dequantize(bytes, dtype.Q4_0(), …)` | `test-quant`: the 44 Q4_0 and Q8_0 tensors of `stories15M-q4_0`, on the CPU device and Metal, bit for bit what llama.cpp's `to_float` makes (`tests/quant/golden`, from `gguf_dump -dequant`) |
 
+## Speed
+
+`vsc run bench` loads `stories15M-q4_0` and generates 100 tokens on each
+device. `vsc run profile` splits a token's time into encoding its launches,
+the device running them, and reading the logits. `vsc run ops` times each
+operation alone at the model's sizes. On an Apple M-series Mac
+(2026-09-25):
+
+| | Vertex | llama.cpp (same machine) |
+| --- | --- | --- |
+| Metal | ~320 tokens/s | 615 tokens/s |
+| CPU | ~70 tokens/s | 3,433 tokens/s |
+
+A model this small is bound by launches, not bandwidth: ~60 kernels a
+token. Fusing more of them and repacking weights for the device are next.
+
 ## Testing against llama.cpp
 
 llama.cpp is the oracle, cloned and built from source. `tests/oracle/llama_run.cpp` runs a prompt through libllama a token at a time (CPU, float32 KV cache) and prints each step's top logits and the greedy continuation (`tests/llama/golden`). `tests/oracle/gguf_dump.cpp` prints what ggml's
