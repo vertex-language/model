@@ -5,6 +5,7 @@
 //
 //   c++ -std=c++17 -I$LLAMA/ggml/include gguf_dump.cpp -L$LLAMA/build/bin -lggml-base -o gguf_dump
 //   ./gguf_dump model.gguf > golden/model.txt
+//   ./gguf_dump -dequant model.gguf | grep ^dequant > golden/model.dequant.txt
 #include "gguf.h"
 #include "ggml.h"
 #include <cinttypes>
@@ -49,7 +50,9 @@ static std::string scalar(const gguf_context* ctx, int64_t k, gguf_type t) {
 }
 
 int main(int argc, char** argv) {
-    if (argc != 2) { fprintf(stderr, "usage: gguf_dump file.gguf\n"); return 2; }
+    bool dequant = argc == 3 && strcmp(argv[1], "-dequant") == 0;
+    if (dequant) { argv++; argc--; }
+    if (argc != 2) { fprintf(stderr, "usage: gguf_dump [-dequant] file.gguf\n"); return 2; }
     gguf_init_params params = { /*no_alloc*/ true, /*ctx*/ nullptr };
     gguf_context* ctx = gguf_init_from_file(argv[1], params);
     if (!ctx) { printf("refused\n"); return 1; }
@@ -79,6 +82,16 @@ int main(int argc, char** argv) {
         size_t got = fread(bytes.data(), 1, size, f);
         printf("tensor %s %s at %zu size %zu fnv:%016" PRIx64 "\n", gguf_get_tensor_name(ctx, i),
                ggml_type_name(gguf_get_tensor_type(ctx, i)), at, size, fnv(1469598103934665603ull, bytes.data(), got));
+        // With -dequant, a quantized tensor's float32 values as ggml's own
+        // to_float makes them, hashed: what a device's decode must equal.
+        ggml_type type = gguf_get_tensor_type(ctx, i);
+        if (dequant && ggml_is_quantized(type)) {
+            size_t n = size / ggml_type_size(type) * ggml_blck_size(type);
+            std::vector<float> values(n);
+            ggml_get_type_traits(type)->to_float(bytes.data(), values.data(), (int64_t)n);
+            printf("dequant %s x%zu fnv:%016" PRIx64 "\n", gguf_get_tensor_name(ctx, i), n,
+                   fnv(1469598103934665603ull, values.data(), n * sizeof(float)));
+        }
     }
     fclose(f);
     gguf_free(ctx);

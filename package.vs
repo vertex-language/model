@@ -10,6 +10,7 @@ let package = Package(
     products: [
         .library(name: "model/gguf", targets: ["gguf"]),
         .executable(name: "test-gguf", targets: ["test_gguf"]),
+        .executable(name: "test-quant", targets: ["test_quant"]),
     ],
     targets: [
         // GGUF: llama.cpp's weight format, metadata and tensors, mapped.
@@ -21,6 +22,14 @@ let package = Package(
             name: "test_gguf",
             dependencies: ["gguf"],
             path: "tests/gguf",
+            exclude: ["golden"]
+        ),
+        // A quantized model's tensors decoded on every device, against
+        // llama.cpp's dequantizer.
+        .executableTarget(
+            name: "test_quant",
+            dependencies: ["gguf"],
+            path: "tests/quant",
             exclude: ["golden"]
         ),
     ]
