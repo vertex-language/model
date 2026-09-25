@@ -1,0 +1,80 @@
+version 3
+alignment 32
+data 727136
+kv tokenizer.ggml.tokens arr str x32000 fnv:d7ad8dd5b4bf5081
+kv tokenizer.ggml.scores arr f32 x32000 fnv:9f03e800d302517d
+kv tokenizer.ggml.token_type arr i32 x32000 fnv:7d79bb34d52738a0
+kv tokenizer.ggml.model str "llama"
+kv general.architecture str "llama"
+kv general.name str "llama"
+kv tokenizer.ggml.unknown_token_id u32 0
+kv tokenizer.ggml.bos_token_id u32 1
+kv tokenizer.ggml.eos_token_id u32 2
+kv tokenizer.ggml.seperator_token_id u32 4294967295
+kv tokenizer.ggml.padding_token_id u32 4294967295
+kv llama.context_length u32 128
+kv llama.embedding_length u32 288
+kv llama.feed_forward_length u32 768
+kv llama.attention.head_count u32 6
+kv llama.block_count u32 6
+kv llama.rope.dimension_count u32 48
+kv llama.attention.layer_norm_rms_epsilon f32 f32:3727c5ac
+kv general.quantization_version u32 2
+kv general.file_type u32 2
+tensor token_embd.weight q4_0 at 727136 size 5184000 fnv:bf5c175bf6dc20a8
+tensor output_norm.weight f32 at 5911136 size 1152 fnv:0106a9b77e9fd1c7
+tensor output.weight q8_0 at 5912288 size 9792000 fnv:96002ba49d683f58
+tensor blk.0.attn_q.weight q4_0 at 15704288 size 46656 fnv:bb0a02c735079550
+tensor blk.0.attn_k.weight q4_0 at 15750944 size 46656 fnv:58422f397468103e
+tensor blk.0.attn_v.weight q4_0 at 15797600 size 46656 fnv:3ed9524b2503bb44
+tensor blk.0.attn_output.weight q4_0 at 15844256 size 46656 fnv:4580c98f07497349
+tensor blk.0.attn_norm.weight f32 at 15890912 size 1152 fnv:88704974bbb00efd
+tensor blk.0.ffn_gate.weight q4_0 at 15892064 size 124416 fnv:38ab4020536c6fe8
+tensor blk.0.ffn_down.weight q4_0 at 16016480 size 124416 fnv:c90f5af0c7dfde32
+tensor blk.0.ffn_up.weight q4_0 at 16140896 size 124416 fnv:ac61a8073efc6d29
+tensor blk.0.ffn_norm.weight f32 at 16265312 size 1152 fnv:1e24a4179244cfc7
+tensor blk.1.attn_q.weight q4_0 at 16266464 size 46656 fnv:ed8b16fa1a79d0cf
+tensor blk.1.attn_k.weight q4_0 at 16313120 size 46656 fnv:5f5810ff639d3cd6
+tensor blk.1.attn_v.weight q4_0 at 16359776 size 46656 fnv:a8c1403d066124fa
+tensor blk.1.attn_output.weight q4_0 at 16406432 size 46656 fnv:3aa3fa2043ed624e
+tensor blk.1.attn_norm.weight f32 at 16453088 size 1152 fnv:e41cf508a768b60c
+tensor blk.1.ffn_gate.weight q4_0 at 16454240 size 124416 fnv:99144583ac59d308
+tensor blk.1.ffn_down.weight q4_0 at 16578656 size 124416 fnv:dbf39e166b5a9373
+tensor blk.1.ffn_up.weight q4_0 at 16703072 size 124416 fnv:ea9ad07d3710947c
+tensor blk.1.ffn_norm.weight f32 at 16827488 size 1152 fnv:74da460bf3babf2d
+tensor blk.2.attn_q.weight q4_0 at 16828640 size 46656 fnv:46f359147888b9ea
+tensor blk.2.attn_k.weight q4_0 at 16875296 size 46656 fnv:96898a4a93ea8beb
+tensor blk.2.attn_v.weight q4_0 at 16921952 size 46656 fnv:6e1e7c9036e036b7
+tensor blk.2.attn_output.weight q4_0 at 16968608 size 46656 fnv:75a47cd3cb1d3565
+tensor blk.2.attn_norm.weight f32 at 17015264 size 1152 fnv:34933e52ca2db6aa
+tensor blk.2.ffn_gate.weight q4_0 at 17016416 size 124416 fnv:0a1c0925660318f4
+tensor blk.2.ffn_down.weight q4_0 at 17140832 size 124416 fnv:37498f7d9a0e679d
+tensor blk.2.ffn_up.weight q4_0 at 17265248 size 124416 fnv:13bfa2e366de0cdd
+tensor blk.2.ffn_norm.weight f32 at 17389664 size 1152 fnv:204480e12c580ed8
+tensor blk.3.attn_q.weight q4_0 at 17390816 size 46656 fnv:d9728429dadcb3e7
+tensor blk.3.attn_k.weight q4_0 at 17437472 size 46656 fnv:e3c01744ce1b3ca1
+tensor blk.3.attn_v.weight q4_0 at 17484128 size 46656 fnv:5cab1ffc12a29d2a
+tensor blk.3.attn_output.weight q4_0 at 17530784 size 46656 fnv:cbd7df6808b37e75
+tensor blk.3.attn_norm.weight f32 at 17577440 size 1152 fnv:b48041e816318533
+tensor blk.3.ffn_gate.weight q4_0 at 17578592 size 124416 fnv:37aec2a3aea5cb70
+tensor blk.3.ffn_down.weight q4_0 at 17703008 size 124416 fnv:bede6801c0368157
+tensor blk.3.ffn_up.weight q4_0 at 17827424 size 124416 fnv:355e8a697a2fa609
+tensor blk.3.ffn_norm.weight f32 at 17951840 size 1152 fnv:0fe21eafaca8fb53
+tensor blk.4.attn_q.weight q4_0 at 17952992 size 46656 fnv:0121d9b171b876ed
+tensor blk.4.attn_k.weight q4_0 at 17999648 size 46656 fnv:d35010e5efd57118
+tensor blk.4.attn_v.weight q4_0 at 18046304 size 46656 fnv:272caa0fbc9fa9b2
+tensor blk.4.attn_output.weight q4_0 at 18092960 size 46656 fnv:38cf76cf9cf368a7
+tensor blk.4.attn_norm.weight f32 at 18139616 size 1152 fnv:fa3aa616f6b7491b
+tensor blk.4.ffn_gate.weight q4_0 at 18140768 size 124416 fnv:178be7925b5f94fc
+tensor blk.4.ffn_down.weight q4_0 at 18265184 size 124416 fnv:e7bb89986b81c7a8
+tensor blk.4.ffn_up.weight q4_0 at 18389600 size 124416 fnv:50ee6a0e33e596b5
+tensor blk.4.ffn_norm.weight f32 at 18514016 size 1152 fnv:19c24bb3c90e817f
+tensor blk.5.attn_q.weight q4_0 at 18515168 size 46656 fnv:3c8bed70b38bbd13
+tensor blk.5.attn_k.weight q4_0 at 18561824 size 46656 fnv:09beac9f5d86ed01
+tensor blk.5.attn_v.weight q4_0 at 18608480 size 46656 fnv:6128176aebe15e16
+tensor blk.5.attn_output.weight q4_0 at 18655136 size 46656 fnv:125bc94ecaac38ad
+tensor blk.5.attn_norm.weight f32 at 18701792 size 1152 fnv:7db69edea3abe5e1
+tensor blk.5.ffn_gate.weight q4_0 at 18702944 size 124416 fnv:336fd539ac4f367f
+tensor blk.5.ffn_down.weight q4_0 at 18827360 size 124416 fnv:3e71eefc3efc4e1e
+tensor blk.5.ffn_up.weight q4_0 at 18951776 size 124416 fnv:fd7001f359fbb817
+tensor blk.5.ffn_norm.weight f32 at 19076192 size 1152 fnv:583e190d42d0e2bc

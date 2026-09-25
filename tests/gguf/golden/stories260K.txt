@@ -1,0 +1,70 @@
+version 3
+alignment 32
+data 14176
+kv tokenizer.ggml.tokens arr str x512 fnv:c46824be5c7aa4aa
+kv tokenizer.ggml.scores arr f32 x512 fnv:ac3f99842d0ca1bf
+kv tokenizer.ggml.token_type arr i32 x512 fnv:7169038cab90a0a0
+kv tokenizer.ggml.model str "llama"
+kv general.architecture str "llama"
+kv general.name str "llama"
+kv tokenizer.ggml.unknown_token_id u32 0
+kv tokenizer.ggml.bos_token_id u32 1
+kv tokenizer.ggml.eos_token_id u32 2
+kv tokenizer.ggml.seperator_token_id u32 4294967295
+kv tokenizer.ggml.padding_token_id u32 4294967295
+kv llama.context_length u32 2048
+kv llama.embedding_length u32 64
+kv llama.feed_forward_length u32 172
+kv llama.attention.head_count u32 8
+kv llama.attention.head_count_kv u32 4
+kv llama.block_count u32 5
+kv llama.rope.dimension_count u32 8
+kv llama.attention.layer_norm_rms_epsilon f32 f32:3727c5ac
+tensor token_embd.weight f32 at 14176 size 131072 fnv:550ce8355c2ca77c
+tensor output_norm.weight f32 at 145248 size 256 fnv:83e2a06c65e641ab
+tensor output.weight f32 at 145504 size 131072 fnv:550ce8355c2ca77c
+tensor blk.0.attn_q.weight f32 at 276576 size 16384 fnv:4be72553f2aba76d
+tensor blk.0.attn_k.weight f32 at 292960 size 8192 fnv:6d8246912231ccd9
+tensor blk.0.attn_v.weight f32 at 301152 size 8192 fnv:9f2bb3b618656f41
+tensor blk.0.attn_output.weight f32 at 309344 size 16384 fnv:1f01a1c38b97a3fe
+tensor blk.0.attn_norm.weight f32 at 325728 size 256 fnv:a554306697f6c0a1
+tensor blk.0.ffn_gate.weight f32 at 325984 size 44032 fnv:4461a93140c776dc
+tensor blk.0.ffn_down.weight f32 at 370016 size 44032 fnv:3a946498f36d261d
+tensor blk.0.ffn_up.weight f32 at 414048 size 44032 fnv:86dd595b55c1601b
+tensor blk.0.ffn_norm.weight f32 at 458080 size 256 fnv:db2f20c109d74f1a
+tensor blk.1.attn_q.weight f32 at 458336 size 16384 fnv:f55ce42e58657911
+tensor blk.1.attn_k.weight f32 at 474720 size 8192 fnv:b90d2b9a16559ad6
+tensor blk.1.attn_v.weight f32 at 482912 size 8192 fnv:40b83d31184c2b61
+tensor blk.1.attn_output.weight f32 at 491104 size 16384 fnv:c3b9bee0ca50bc45
+tensor blk.1.attn_norm.weight f32 at 507488 size 256 fnv:c9565840561ed457
+tensor blk.1.ffn_gate.weight f32 at 507744 size 44032 fnv:290be39df1d8b71c
+tensor blk.1.ffn_down.weight f32 at 551776 size 44032 fnv:59d5a7f1b92a2e27
+tensor blk.1.ffn_up.weight f32 at 595808 size 44032 fnv:61a3319c1eac818d
+tensor blk.1.ffn_norm.weight f32 at 639840 size 256 fnv:ed5c814e020130c1
+tensor blk.2.attn_q.weight f32 at 640096 size 16384 fnv:517d216accfe88c9
+tensor blk.2.attn_k.weight f32 at 656480 size 8192 fnv:28d44547ba29ade9
+tensor blk.2.attn_v.weight f32 at 664672 size 8192 fnv:10a701de5821461d
+tensor blk.2.attn_output.weight f32 at 672864 size 16384 fnv:f454c4eb69351447
+tensor blk.2.attn_norm.weight f32 at 689248 size 256 fnv:a5b850d7f5cd81b0
+tensor blk.2.ffn_gate.weight f32 at 689504 size 44032 fnv:194336297083d901
+tensor blk.2.ffn_down.weight f32 at 733536 size 44032 fnv:4234a12a644bb011
+tensor blk.2.ffn_up.weight f32 at 777568 size 44032 fnv:5601da7653e5ecfb
+tensor blk.2.ffn_norm.weight f32 at 821600 size 256 fnv:9ba5ea0312957e3c
+tensor blk.3.attn_q.weight f32 at 821856 size 16384 fnv:b02eb0157577f1f1
+tensor blk.3.attn_k.weight f32 at 838240 size 8192 fnv:dadd181c134f252f
+tensor blk.3.attn_v.weight f32 at 846432 size 8192 fnv:2233fe0ce0554556
+tensor blk.3.attn_output.weight f32 at 854624 size 16384 fnv:fce1c58fcc279757
+tensor blk.3.attn_norm.weight f32 at 871008 size 256 fnv:a933e921fe13d47e
+tensor blk.3.ffn_gate.weight f32 at 871264 size 44032 fnv:c0afed7a67144b77
+tensor blk.3.ffn_down.weight f32 at 915296 size 44032 fnv:83daaa0efb910d92
+tensor blk.3.ffn_up.weight f32 at 959328 size 44032 fnv:d78ec64eb0a391de
+tensor blk.3.ffn_norm.weight f32 at 1003360 size 256 fnv:6fecabeec55fd1f5
+tensor blk.4.attn_q.weight f32 at 1003616 size 16384 fnv:d728e5a60e7d2508
+tensor blk.4.attn_k.weight f32 at 1020000 size 8192 fnv:6a195198049fdd40
+tensor blk.4.attn_v.weight f32 at 1028192 size 8192 fnv:4cfbe48f49ba5ab5
+tensor blk.4.attn_output.weight f32 at 1036384 size 16384 fnv:cddf5c9fbfdc201b
+tensor blk.4.attn_norm.weight f32 at 1052768 size 256 fnv:e8a50da27880e5bd
+tensor blk.4.ffn_gate.weight f32 at 1053024 size 44032 fnv:7eca0e05e189fd08
+tensor blk.4.ffn_down.weight f32 at 1097056 size 44032 fnv:90c8033863fbc2b1
+tensor blk.4.ffn_up.weight f32 at 1141088 size 44032 fnv:bfa2a60ba4afd50c
+tensor blk.4.ffn_norm.weight f32 at 1185120 size 256 fnv:6463cdb9f15e618e
