@@ -70,3 +70,9 @@ $ vsc run test-gguf
 $ vsc run test-quant
 $ vsc run test-llama
 ```
+
+---
+
+## License
+
+[MIT](LICENSE)
