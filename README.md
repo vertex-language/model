@@ -1,9 +1,23 @@
 # model
 
-Running models in Vertex: model families, the kits they share, weight
-formats, and generation. The design is `proposed_ai_packages.md` §6.3 and §10.
-The first target is `model/llama`, running a quantized GGUF llama end to end.
-Every package it needs is built as the path reaches it.
+[![package: vs-package](https://img.shields.io/badge/package-vs--package-f4f4f5?style=flat-square&labelColor=e4e4e7&color=18181b)](https://github.com/vertex-language)
+[![models: gguf | llama](https://img.shields.io/badge/models-gguf%20%7C%20llama-f4f4f5?style=flat-square&labelColor=e4e4e7&color=18181b)](https://github.com/vertex-language/model)
+
+Model architectures, weight formats, and generation: quantized GGUF model execution, memory-mapped tensor loading, and inference engines.
+
+---
+
+## Quick Start
+
+Run any entry point with:
+
+```bash
+vsc run main.vs
+```
+
+---
+
+## Packages
 
 | Package | Built | Tested |
 | --- | --- | --- |
