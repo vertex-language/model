@@ -9,8 +9,10 @@
 // finds later. A mapped tensor is read in place, so that is checked first.
 package gguf
 
-import "fs"
-import "fs/mmap"
+import (
+    "fs"
+    "fs/mmap"
+)
 
 /// The magic, and the versions read: v1 had 32-bit counts and is gone.
 let magic: uint32 = 0x46554747 // "GGUF", little-endian

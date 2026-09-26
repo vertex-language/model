@@ -4,8 +4,10 @@
 // malformed files, each refused for the reason llama.cpp refuses it.
 package main
 
-import "fs"
-import "model/gguf"
+import (
+    "fs"
+    "model/gguf"
+)
 
 var failures = 0
 
@@ -228,6 +230,18 @@ check(g.Architecture == "toy" && g.Flag("toy.flag") == true, "a toy file's metad
 let a = g.Tensor("a")!, b = g.Tensor("b")!
 check(a.Type == .F32 && a.Size == 12 && float32(bitPattern: uint32(g.Bytes(a)[0]) | uint32(g.Bytes(a)[1]) << 8 | uint32(g.Bytes(a)[2]) << 16 | uint32(g.Bytes(a)[3]) << 24) == 1.5, "tensor a's first f32")
 check(b.Type == .BF16 && b.Shape == [2, 2] && g.Copy(b) == [0x80, 0x3F, 0x00, 0x40, 0x40, 0x40, 0x80, 0x40], "tensor b's bf16 bytes, 32 bytes in")
+
+// Writing: each test model re-encoded from what was read is the file
+// llama.cpp's writer wrote, byte for byte.
+for name in ["stories260K", "stories15M-q4_0"] {
+    let src = fs.Path("testdata/\(name).gguf")
+    let f = try gguf.Open(src)
+    var meta: [(string, gguf.Value)] = []
+    for k in f.Keys { meta.append((k, f.Value(k)!)) }
+    let tensors = f.Tensors.map { gguf.Tensor(name: $0.Name, type: $0.Type, shape: $0.Shape, bytes: f.Copy($0)) }
+    let out = try gguf.Encode(metadata: meta, tensors: tensors)
+    check(out == (try fs.ReadFile(src)), "\(name): written again, byte for byte")
+}
 
 try? fs.RemoveAll(dir)
 print(failures == 0 ? "all passed" : "\(failures) failed")

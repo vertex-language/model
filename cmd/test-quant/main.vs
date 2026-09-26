@@ -4,10 +4,12 @@
 // (testdata/oracle/gguf_dump.cpp -dequant): decoding is exact, so equal.
 package main
 
-import "fs"
-import "gpu"
-import "gpu/dtype"
-import "model/gguf"
+import (
+    "fs"
+    "gpu"
+    "gpu/dtype"
+    "model/gguf"
+)
 
 var failures = 0
 

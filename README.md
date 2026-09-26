@@ -1,74 +1,58 @@
 # model
 
 [![package: vs-package](https://img.shields.io/badge/package-vs--package-f4f4f5?style=flat-square&labelColor=e4e4e7&color=18181b)](https://github.com/vertex-language)
-[![models: gguf | llama](https://img.shields.io/badge/models-gguf%20%7C%20llama-f4f4f5?style=flat-square&labelColor=e4e4e7&color=18181b)](https://github.com/vertex-language/model)
+[![formats: safetensors | gguf | torch](https://img.shields.io/badge/formats-safetensors%20%7C%20gguf%20%7C%20torch-f4f4f5?style=flat-square&labelColor=e4e4e7&color=18181b)](https://github.com/vertex-language/model)
 
-Model architectures, weight formats, and generation: quantized GGUF model execution, memory-mapped tensor loading, and inference engines.
+What every model shares, and no model: weight formats, and a checkpoint that reads any of them one way. The models themselves live in their task's repository: [`llm`](https://github.com/vertex-language/llm) for text generation, [`tts`](https://github.com/vertex-language/tts) for speech synthesis. The layout is `proposed_vs_model.md`.
 
 ---
 
 ## Quick Start
 
-Run any entry point with:
-
 ```bash
-vsc run main.vs
+vsc run test-gguf           # the GGUF reader and writer against llama.cpp's
+vsc run test-safetensors    # the safetensors reader and writer against the reference
+vsc run test-quant          # every quantized tensor decoded, bit for bit
+vsc run test-torch          # the PyTorch reader against torch.load, Kokoro-82M included
 ```
 
 ---
 
 ## Packages
 
-| Package | Built | Tested |
-| --- | --- | --- |
-| `model/gguf` | `gguf.Open(path)`: a GGUF v2/v3 file, memory-mapped through `fs/mmap`. The header is read, and tensor bytes are used where they lie (`File.Bytes`) or copied (`File.Copy`). Typed metadata accessors (`Text`, `Integer`, `Number`, `Flag`, `Texts`, `Integers`, `Numbers`), `TensorInfo` (name, shape innermost first, `TensorType`, offset, size), and every ggml tensor type with its block and byte size | both test models dumped line for line as llama.cpp's own reader dumps them, tensor bytes hashed; 20 malformed files, each refused for llama.cpp's reason |
-| `model/llama` | The Llama family (`general.architecture` `llama`): `Config.Read` from a GGUF's `llama.*` keys, `Model.Load(path, on: device)` (weights by their GGUF names, a tied head when there is no `output.weight`, the tokenizer from `tokenizer.ggml.*`), `Forward(token, position)` to logits with a KV cache, and greedy `Generate`. f32, Q4_0 and Q8_0 weights; grouped-query attention | `test-llama`: "Once upon a time" through both test models on the CPU device and Metal. The 32 greedy tokens of each match llama.cpp's exactly. Logits are within 0.01 (f32) and 0.25 (q4_0) of llama.cpp's, and the f32 model's first step is within 1e-4 of float64 math (2.1e-6 in fact; llama.cpp's is 2.5e-4 off) |
-| (with `gpu/dtype`) | Every quantized tensor of a GGUF file decoded on a device: `dtype.Dequantize(bytes, dtype.Q4_0(), …)` | `test-quant`: the 44 Q4_0 and Q8_0 tensors of `stories15M-q4_0`, on the CPU device and Metal, bit for bit what llama.cpp's `to_float` makes (`cmd/test-quant/golden`, from `gguf_dump -dequant`) |
+| Package | What it is |
+| --- | --- |
+| **`model`** | `model.Open(path)`: a Hugging Face snapshot directory (config.json and safetensors, sharded or not, or PyTorch weights) or a GGUF file, opened offline as a `Checkpoint`. A config naming no architecture (Kokoro's) opens with none, for a family to claim by what else it holds. It answers in Hugging Face's vocabulary whatever the format: `ck.Config.Int("hidden_size")`, `ck.Tensor("model.layers.0.self_attn.q_proj.weight", on: device)` (a zero-copy view of the mapping where the device reads it in place), `ck.Tokenizer()`, `ck.ChatTemplate`, `ck.Architecture`. How a task's names are spelled in a GGUF is the task's to give (`ck.Aliases`; `llm/arch.DecoderAliases` for decoders) |
+| **`model/fetch`** | `fetch.Open(ref)`: a Hub reference (`hf.co/org/name`, `…:Q4_K_M`, a file in a repo) or a path. The repository's files are listed first (no bytes), a format is chosen, and only its files are downloaded through `remote/hub`. `fetch.Inspect(ref)` says what a reference is without loading it. The only package here that reaches the network: families never import it |
+| **`model/gguf`** | `gguf.Open(path)`: GGUF v2/v3, memory-mapped; typed metadata, tensor infos, zero-copy bytes. `gguf.Save` and `gguf.Encode` write one |
+| **`model/safetensors`** | `safetensors.Open(path)`: the header parsed, the data mapped, nothing copied. `safetensors.Save` and `Encode` write one |
+| **`model/torch`** | `torch.Open(path)`: a PyTorch checkpoint (`.pth`, `.pt`, `pytorch_model.bin`; the zip format), its pickle read by a restricted unpickler that refuses any global but tensor rebuilding, as `torch.load(weights_only=True)` does; tensors mapped in place, contiguous ones only. `model.Open` opens a directory of them as a checkpoint |
 
-## Speed
+Quantized GGUF tensors are decoded on a device by `gpu/dtype` (`dtype.Dequantize`).
 
-`vsc run bench` loads `stories15M-q4_0` and generates 100 tokens on each
-device. `vsc run profile` splits a token's time into encoding its launches,
-the device running them, and reading the logits. `vsc run ops` times each
-operation alone at the model's sizes. On an Apple M-series Mac
-(2026-09-25):
+---
 
-| | Vertex | llama.cpp (same machine) |
-| --- | --- | --- |
-| Metal | ~320 tokens/s | 615 tokens/s |
-| CPU | ~70 tokens/s | 3,433 tokens/s |
+## Testing
 
-A model this small is bound by launches, not bandwidth: ~60 kernels a
-token. Fusing more of them and repacking weights for the device are next.
-
-## Testing against llama.cpp
-
-llama.cpp is the oracle, cloned and built from source. `testdata/oracle/llama_run.cpp` runs a prompt through libllama a token at a time (CPU, float32 KV cache) and prints each step's top logits and the greedy continuation (`cmd/test-llama/golden`). `testdata/oracle/gguf_dump.cpp` prints what ggml's
-`gguf.h` reads from a file, with floats as their bits and arrays and tensor
-bytes as FNV-1a hashes. Its output is in `cmd/test-gguf/golden`. To regenerate
-it from a llama.cpp checkout built with CMake:
+Each format is held to its own reference. `testdata/oracle/gguf_dump.cpp`
+prints what ggml's `gguf.h` reads from a file, with floats as their bits and
+arrays and tensor bytes as FNV-1a hashes (`cmd/test-gguf/golden`);
+`testdata/oracle/safetensors_dump.py` does the same with the `safetensors`
+library (`cmd/test-safetensors/golden`). To regenerate the GGUF dumps from a
+llama.cpp checkout built with CMake:
 
 ```console
 $ c++ -std=c++17 -I$LLAMA/ggml/include testdata/oracle/gguf_dump.cpp -L$LLAMA/build/bin -lggml-base -Wl,-rpath,$LLAMA/build/bin -o gguf_dump
 $ ./gguf_dump testdata/stories260K.gguf > cmd/test-gguf/golden/stories260K.txt
 ```
 
-## Test models
-
-These live in `testdata/` and are not committed. They are llama2.c's
-"tinyllamas" converted to GGUF, from `hf.co/ggml-org/models-moved`, under
-`tinyllamas/`:
-
-| File | Size | What it tests |
-| --- | --- | --- |
-| `stories260K.gguf` | 1.2 MB | f32 weights; grouped-query attention (8 heads, 4 KV heads); a 512-token vocabulary |
-| `stories15M-q4_0.gguf` | 19 MB | Q4_0 weights and a Q8_0 output head; a 32000-token SentencePiece vocabulary |
+The test files live in `testdata/` and are not committed: llama2.c's
+"tinyllamas" as GGUF, from `hf.co/ggml-org/models-moved` under `tinyllamas/`,
+and `hf.co/hf-internal-testing/tiny-random-LlamaForCausalLM` as
+`testdata/tiny-llama`:
 
 ```console
-$ for f in stories260K.gguf stories15M-q4_0.gguf; do curl -sSL -o testdata/$f https://huggingface.co/ggml-org/models-moved/resolve/main/tinyllamas/$f; done
-$ vsc run test-gguf
-$ vsc run test-quant
-$ vsc run test-llama
+$ for f in stories260K.gguf stories15M-q4_0.gguf stories110M-q4_k_m.gguf; do curl -sSL -o testdata/$f https://huggingface.co/ggml-org/models-moved/resolve/main/tinyllamas/$f; done
 ```
 
 ---

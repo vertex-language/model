@@ -1,0 +1,22 @@
+lm_head.weight F32 [32000,16] 0 2048000 8d45fb326e4b737f
+model.embed_tokens.weight F32 [32000,16] 2048000 4096000 3aa5f4fdddd153b8
+model.layers.0.input_layernorm.weight F32 [16] 4096000 4096064 4e927ff833e131a5
+model.layers.0.mlp.down_proj.weight F32 [16,64] 4096064 4100160 062f4174979d1620
+model.layers.0.mlp.gate_proj.weight F32 [64,16] 4100160 4104256 6dfc74696a14e74a
+model.layers.0.mlp.up_proj.weight F32 [64,16] 4104256 4108352 55a11b9637b7c821
+model.layers.0.post_attention_layernorm.weight F32 [16] 4108352 4108416 4e927ff833e131a5
+model.layers.0.self_attn.k_proj.weight F32 [16,16] 4108416 4109440 4ea9a5428cecdd65
+model.layers.0.self_attn.o_proj.weight F32 [16,16] 4109440 4110464 d7084bfb8cf8e753
+model.layers.0.self_attn.q_proj.weight F32 [16,16] 4110464 4111488 c963a6b7ee38dc7d
+model.layers.0.self_attn.v_proj.weight F32 [16,16] 4111488 4112512 65cd24fa887cbf6f
+model.layers.1.input_layernorm.weight F32 [16] 4112512 4112576 4e927ff833e131a5
+model.layers.1.mlp.down_proj.weight F32 [16,64] 4112576 4116672 a744fd7a2c980566
+model.layers.1.mlp.gate_proj.weight F32 [64,16] 4116672 4120768 38245bd51b49347e
+model.layers.1.mlp.up_proj.weight F32 [64,16] 4120768 4124864 2d1f835eef39fd23
+model.layers.1.post_attention_layernorm.weight F32 [16] 4124864 4124928 4e927ff833e131a5
+model.layers.1.self_attn.k_proj.weight F32 [16,16] 4124928 4125952 2f8f181bed0a10d4
+model.layers.1.self_attn.o_proj.weight F32 [16,16] 4125952 4126976 2ed13c4482477644
+model.layers.1.self_attn.q_proj.weight F32 [16,16] 4126976 4128000 1eb53f6c1758d379
+model.layers.1.self_attn.v_proj.weight F32 [16,16] 4128000 4129024 f50e93b6a2c6a438
+model.norm.weight F32 [16] 4129024 4129088 4e927ff833e131a5
+meta format=pt

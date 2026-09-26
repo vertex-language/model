@@ -1,0 +1,7 @@
+a float32 2x3 30bf8e3884d0e450
+b.c int64 4 64dbcbc3ab5bf1a5
+b.half float16 5 ba7377d4205a0272
+bf bfloat16 3x2 02fc04eeaf339963
+mask bool 3 d0a39818672732bf
+scalar float32 scalar 4cb8767f9d714215
+view float32 2x4 6518119753242ca5
