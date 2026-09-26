@@ -1,5 +1,5 @@
 // model/gguf against llama.cpp: each test model read by gguf.Open and
-// dumped in the form tests/oracle/gguf_dump.cpp prints what llama.cpp's
+// dumped in the form testdata/oracle/gguf_dump.cpp prints what llama.cpp's
 // reader makes of it, compared line for line with that golden; then
 // malformed files, each refused for the reason llama.cpp refuses it.
 package main
@@ -109,7 +109,7 @@ func dump(_ f: gguf.File) -> [string] {
     return out
 }
 
-let here = fs.Path("tests/gguf/golden")
+let here = fs.Path("cmd/test-gguf/golden")
 for name in ["stories260K", "stories15M-q4_0"] {
     let f = try gguf.Open(fs.Path("testdata/\(name).gguf"))
     let got = dump(f)

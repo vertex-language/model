@@ -1,7 +1,7 @@
 // Quantized models' tensors -- q4_0 and q8_0, and the k-quants q4_K and
 // q6_K of a Q4_K_M file -- decoded on every device by gpu/dtype, and
 // compared bit for bit with what llama.cpp's own dequantizer makes of them
-// (tests/oracle/gguf_dump.cpp -dequant): decoding is exact, so equal.
+// (testdata/oracle/gguf_dump.cpp -dequant): decoding is exact, so equal.
 package main
 
 import "fs"
@@ -49,7 +49,7 @@ func decode(_ d: gpu.Device, _ f: gguf.File, _ t: gguf.TensorInfo) async throws 
 
 for name in ["stories15M-q4_0", "stories110M-q4_k_m"] {
     let f = try gguf.Open(fs.Path("testdata/\(name).gguf"))
-    let golden = try fs.ReadText(fs.Path("tests/quant/golden/\(name).dequant.txt"))
+    let golden = try fs.ReadText(fs.Path("cmd/test-quant/golden/\(name).dequant.txt"))
     for line in golden.split(separator: "\n") {
         let parts = line.split(separator: " ")
         let tensorName = String(parts[1])

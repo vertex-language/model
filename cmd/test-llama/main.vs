@@ -1,7 +1,7 @@
 // model/llama against llama.cpp: "Once upon a time" through each test
 // model a token at a time, on every device -- the logits of each step
 // where llama.cpp's top five are, and its greedy continuation, token for
-// token (golden/, from tests/oracle/llama_run.cpp).
+// token (golden/, from testdata/oracle/llama_run.cpp).
 //
 // llama.cpp is not exact: at the f32 model's first step its logits are
 // 2.5e-4 from the float64 answer, where these are 1e-6 from it (float32
@@ -72,7 +72,7 @@ func check(_ ok: bool, _ what: string) {
 }
 
 for (name, tolerance) in [("stories260K", 0.01), ("stories15M-q4_0", 0.25), ("stories110M-q4_k_m", 0.5)] {
-    let golden = try fs.ReadText(fs.Path("tests/llama/golden/\(name).txt")).split(separator: "\n")
+    let golden = try fs.ReadText(fs.Path("cmd/test-llama/golden/\(name).txt")).split(separator: "\n")
     var steps: [(int, [(int, float64)])] = []
     var greedy: [int] = []
     for line in golden {

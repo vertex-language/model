@@ -23,7 +23,7 @@ vsc run main.vs
 | --- | --- | --- |
 | `model/gguf` | `gguf.Open(path)`: a GGUF v2/v3 file, memory-mapped through `fs/mmap`. The header is read, and tensor bytes are used where they lie (`File.Bytes`) or copied (`File.Copy`). Typed metadata accessors (`Text`, `Integer`, `Number`, `Flag`, `Texts`, `Integers`, `Numbers`), `TensorInfo` (name, shape innermost first, `TensorType`, offset, size), and every ggml tensor type with its block and byte size | both test models dumped line for line as llama.cpp's own reader dumps them, tensor bytes hashed; 20 malformed files, each refused for llama.cpp's reason |
 | `model/llama` | The Llama family (`general.architecture` `llama`): `Config.Read` from a GGUF's `llama.*` keys, `Model.Load(path, on: device)` (weights by their GGUF names, a tied head when there is no `output.weight`, the tokenizer from `tokenizer.ggml.*`), `Forward(token, position)` to logits with a KV cache, and greedy `Generate`. f32, Q4_0 and Q8_0 weights; grouped-query attention | `test-llama`: "Once upon a time" through both test models on the CPU device and Metal. The 32 greedy tokens of each match llama.cpp's exactly. Logits are within 0.01 (f32) and 0.25 (q4_0) of llama.cpp's, and the f32 model's first step is within 1e-4 of float64 math (2.1e-6 in fact; llama.cpp's is 2.5e-4 off) |
-| (with `gpu/dtype`) | Every quantized tensor of a GGUF file decoded on a device: `dtype.Dequantize(bytes, dtype.Q4_0(), …)` | `test-quant`: the 44 Q4_0 and Q8_0 tensors of `stories15M-q4_0`, on the CPU device and Metal, bit for bit what llama.cpp's `to_float` makes (`tests/quant/golden`, from `gguf_dump -dequant`) |
+| (with `gpu/dtype`) | Every quantized tensor of a GGUF file decoded on a device: `dtype.Dequantize(bytes, dtype.Q4_0(), …)` | `test-quant`: the 44 Q4_0 and Q8_0 tensors of `stories15M-q4_0`, on the CPU device and Metal, bit for bit what llama.cpp's `to_float` makes (`cmd/test-quant/golden`, from `gguf_dump -dequant`) |
 
 ## Speed
 
@@ -43,14 +43,14 @@ token. Fusing more of them and repacking weights for the device are next.
 
 ## Testing against llama.cpp
 
-llama.cpp is the oracle, cloned and built from source. `tests/oracle/llama_run.cpp` runs a prompt through libllama a token at a time (CPU, float32 KV cache) and prints each step's top logits and the greedy continuation (`tests/llama/golden`). `tests/oracle/gguf_dump.cpp` prints what ggml's
+llama.cpp is the oracle, cloned and built from source. `testdata/oracle/llama_run.cpp` runs a prompt through libllama a token at a time (CPU, float32 KV cache) and prints each step's top logits and the greedy continuation (`cmd/test-llama/golden`). `testdata/oracle/gguf_dump.cpp` prints what ggml's
 `gguf.h` reads from a file, with floats as their bits and arrays and tensor
-bytes as FNV-1a hashes. Its output is in `tests/gguf/golden`. To regenerate
+bytes as FNV-1a hashes. Its output is in `cmd/test-gguf/golden`. To regenerate
 it from a llama.cpp checkout built with CMake:
 
 ```console
-$ c++ -std=c++17 -I$LLAMA/ggml/include tests/oracle/gguf_dump.cpp -L$LLAMA/build/bin -lggml-base -Wl,-rpath,$LLAMA/build/bin -o gguf_dump
-$ ./gguf_dump testdata/stories260K.gguf > tests/gguf/golden/stories260K.txt
+$ c++ -std=c++17 -I$LLAMA/ggml/include testdata/oracle/gguf_dump.cpp -L$LLAMA/build/bin -lggml-base -Wl,-rpath,$LLAMA/build/bin -o gguf_dump
+$ ./gguf_dump testdata/stories260K.gguf > cmd/test-gguf/golden/stories260K.txt
 ```
 
 ## Test models
