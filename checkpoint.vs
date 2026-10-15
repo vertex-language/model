@@ -284,11 +284,20 @@ public final class Checkpoint {
 // or byte-level BPE ("gpt2", its pre-tokenizer named by tokenizer.ggml.pre).
 func ggufTokenizer(_ f: gguf.File) throws -> tokenizer.Tokenizer {
     let model = f.Text("tokenizer.ggml.model") ?? "llama"
-    guard let tokens = f.Texts("tokenizer.ggml.tokens"), let types = f.Integers("tokenizer.ggml.token_type") else {
-        throw OpenError.unsupported("no tokenizer.ggml tokens and types")
+    guard let tokens = f.Texts("tokenizer.ggml.tokens") else {
+        throw OpenError.unsupported("no tokenizer.ggml tokens")
     }
+    let types = f.Integers("tokenizer.ggml.token_type") ?? [int](repeating: 1, count: tokens.count)
     let kinds = types.map { tokenizer.Kind(rawValue: $0) ?? .Normal }
     switch model {
+    case "test":
+        // llama.cpp's stand-in vocabulary for its random-weight test
+        // models (test-llama-archs): tokens addressed by id alone. Read as
+        // SentencePiece pieces so that ids decode to their names.
+        return tokenizer.Tokenizer.SentencePiece(tokenizer.Vocabulary(
+            tokens: tokens,
+            scores: Array(((f.Numbers("tokenizer.ggml.scores") ?? []).map { float32($0) } + [float32](repeating: 0, count: tokens.count)).prefix(tokens.count)),
+            kinds: kinds, addBos: false, addEos: false, addSpacePrefix: false))
     case "llama":
         guard let scores = f.Numbers("tokenizer.ggml.scores") else {
             throw OpenError.unsupported("a SentencePiece vocabulary without scores")
