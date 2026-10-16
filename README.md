@@ -14,6 +14,8 @@ vsc run test-gguf           # the GGUF reader and writer against llama.cpp's
 vsc run test-safetensors    # the safetensors reader and writer against the reference
 vsc run test-quant          # every quantized tensor decoded, bit for bit
 vsc run test-torch          # the PyTorch reader against torch.load, Kokoro-82M included
+vsc run test-registry       # the list of known models, checked offline
+vsc run registry -- list    # and by name: show, pull, probe
 ```
 
 ---
@@ -23,6 +25,7 @@ vsc run test-torch          # the PyTorch reader against torch.load, Kokoro-82M 
 | Package | What it is |
 | --- | --- |
 | **`model`** | `model.Open(path)`: a Hugging Face snapshot directory (config.json and safetensors, sharded or not, or PyTorch weights) or a GGUF file, opened offline as a `Checkpoint`. A config naming no architecture (Kokoro's) opens with none, for a family to claim by what else it holds. It answers in Hugging Face's vocabulary whatever the format: `ck.Config.Int("hidden_size")`, `ck.Tensor("model.layers.0.self_attn.q_proj.weight", on: device)` (a zero-copy view of the mapping where the device reads it in place), `ck.Tokenizer()`, `ck.ChatTemplate`, `ck.Architecture`. How a task's names are spelled in a GGUF is the task's to give (`ck.Aliases`; `llm/arch.DecoderAliases` for decoders) |
+| **`model/registry`** | Models by name: `registry.Pull("qwen3:8b")`. 386 original models (llm, diffusion, embed, asr, tts) that download without a login, each pinned to a repository, a commit, and each file's size and hash. The ladder support is measured against: being listed is not being runnable |
 | **`model/fetch`** | `fetch.Open(ref)`: a Hub reference (`hf.co/org/name`, `…:Q4_K_M`, a file in a repo) or a path. The repository's files are listed first (no bytes), a format is chosen, and only its files are downloaded through `remote/hub`. `fetch.Inspect(ref)` says what a reference is without loading it. The only package here that reaches the network: families never import it |
 | **`model/gguf`** | `gguf.Open(path)`: GGUF v2/v3, memory-mapped; typed metadata, tensor infos, zero-copy bytes. `gguf.Save` and `gguf.Encode` write one |
 | **`model/safetensors`** | `safetensors.Open(path)`: the header parsed, the data mapped, nothing copied. `safetensors.Save` and `Encode` write one |
