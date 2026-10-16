@@ -164,6 +164,10 @@ public enum RegistryError: Error, CustomStringConvertible {
     }
 }
 
+// table is tableText (table.vs) read, once, the first time the list is
+// asked for.
+let table: [Entry] = parseTable(tableText)
+
 /// Entries is the whole list, by task, name and tag.
 public func Entries() -> [Entry] {
     return table

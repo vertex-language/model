@@ -5958,8 +5958,3 @@ kokoro:82m tts hexgrad/Kokoro-82M@f3ff3571791e39611d31c381e3a41a3af07b4987 hexgr
   files voices/zm_yunxia.pt 523430 bb2b03b08e84d64e1214440ce3b624987fac177f2eeb5bab8571799a3d980acd
   files voices/zm_yunyang.pt 523435 5238ac22e0c7f8b6cdd2eddd6e444b8a700b73c4674d9a047d59a94ff96379a2
 """
-
-// table is tableText read, once, the first time the list is asked for. It
-// is declared after tableText: a package-level initializer does not yet see
-// a global declared after it, in its file or a file that sorts later.
-let table: [Entry] = parseTable(tableText)
