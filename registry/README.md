@@ -38,7 +38,7 @@ The generation is part of the name (`qwen2.5`, `qwen3`, `gemma3`, `gemma4`), so 
 - **Every generation and size**, oldest to newest.
 - **From-scratch models with no GGUF** (Kokoro) carry their own files, as one quant named `files`.
 
-To add a model, add an `Entry` to `table.vs`; its comment says where the pins come from.
+To add a model, add its lines to `table.vs`; its comment gives the format and where the pins come from.
 
 ## Errors
 
