@@ -142,26 +142,26 @@ public func Save(metadata: [(string, Value)], tensors: [Layout], to path: fs.Pat
 struct writer {
     var out: [uint8] = []
 
-    mutating func u8(_ v: uint8) { out.append(v) }
-    mutating func u16(_ v: uint16) {
+    mutating func u8(v: uint8) { out.append(v) }
+    mutating func u16(v: uint16) {
         out.append(uint8(truncatingIfNeeded: v))
         out.append(uint8(truncatingIfNeeded: v >> 8))
     }
-    mutating func u32(_ v: uint32) {
+    mutating func u32(v: uint32) {
         for i in 0..<4 { out.append(uint8(truncatingIfNeeded: v >> uint32(8 * i))) }
     }
-    mutating func u64(_ v: uint64) {
+    mutating func u64(v: uint64) {
         for i in 0..<8 { out.append(uint8(truncatingIfNeeded: v >> uint64(8 * i))) }
     }
-    mutating func text(_ s: string) {
+    mutating func text(s: string) {
         let b = [uint8](s.utf8)
         u64(uint64(b.count))
         out.append(contentsOf: b)
     }
-    mutating func align(_ a: int) {
+    mutating func align(a: int) {
         while out.count % a != 0 { out.append(0) }
     }
-    mutating func scalar(_ v: Value) {
+    mutating func scalar(v: Value) {
         switch v {
         case .U8(let x): u8(x)
         case .I8(let x): u8(uint8(bitPattern: x))

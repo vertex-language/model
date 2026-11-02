@@ -9,14 +9,14 @@ import "model/registry"
 
 var failures = 0
 
-func fail(_ what: string) {
+func fail(what: string) {
     failures += 1
     if failures <= 40 {
         print("FAIL " + what)
     }
 }
 
-func isHex(_ s: string, _ n: int) -> bool {
+func isHex(s: string, n: int) -> bool {
     if s.count != n {
         return false
     }

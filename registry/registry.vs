@@ -86,7 +86,7 @@ public struct Entry {
     }
 
     /// QuantNamed is the quant of that name, or nil.
-    public func QuantNamed(_ name: string) -> Quant? {
+    public func QuantNamed(name: string) -> Quant? {
         for q in self.Quants where q.Name == name {
             return q
         }
@@ -175,7 +175,7 @@ public func Entries() -> [Entry] {
 
 // parseTable reads the list's text (table.vs says its format). A line it
 // cannot read is skipped; test-registry counts what it read.
-func parseTable(_ text: string) -> [Entry] {
+func parseTable(text: string) -> [Entry] {
     var out: [Entry] = []
     var head: [string] = []
     var files: [(string, File)] = []
@@ -201,7 +201,7 @@ func parseTable(_ text: string) -> [Entry] {
 
 // entry is an entry line's words and its files, or nil where they are
 // not one: name:tag task repo@commit source arch license default [latest].
-func entry(_ w: [string], _ files: [(string, File)]) -> Entry? {
+func entry(w: [string], files: [(string, File)]) -> Entry? {
     if w.count < 7 || files.isEmpty {
         return nil
     }
@@ -253,7 +253,7 @@ public func Names() -> [string] {
 ///     qwen3:8b-q8_0      that tag and quant
 ///
 /// Names and tags are matched without case.
-public func Find(_ ref: string) throws -> Pick {
+public func Find(ref: string) throws -> Pick {
     let text = ref.lowercased()
     var name = text
     var tag = ""
@@ -300,7 +300,7 @@ public func Find(_ ref: string) throws -> Pick {
     throw RegistryError.unknownTag(ref, tags)
 }
 
-func pick(_ e: Entry, _ quant: string, _ ref: string) throws -> Pick {
+func pick(e: Entry, quant: string, ref: string) throws -> Pick {
     let want = quant.isEmpty || quant == "-" ? "files" : quant
     guard let q = e.QuantNamed(want) else {
         var names: [string] = []
@@ -314,7 +314,7 @@ func pick(_ e: Entry, _ quant: string, _ ref: string) throws -> Pick {
 
 /// Suggest is up to eight names that look like name: containing it,
 /// contained in it, or sharing its first three letters.
-public func Suggest(_ name: string) -> [string] {
+public func Suggest(name: string) -> [string] {
     let head = String(name.prefix(3))
     var out: [string] = []
     for n in Names() {
@@ -330,7 +330,7 @@ public func Suggest(_ name: string) -> [string] {
 
 /// Ref is the hub reference a pick downloads from: its repository at its
 /// pinned commit.
-public func Ref(_ p: Pick) -> hub.Ref {
+public func Ref(p: Pick) -> hub.Ref {
     return hub.Ref(p.Entry.Repo, revision: p.Entry.Revision)
 }
 
@@ -360,7 +360,7 @@ public struct Pulled {
 
 /// Pull downloads what a reference names into the Hugging Face cache --
 /// only what is missing -- and is where it is.
-public func Pull(_ ref: string, hub h: hub.Hub = hub.Hub()) async throws -> Pulled {
+public func Pull(ref: string, hub h: hub.Hub = hub.Hub()) async throws -> Pulled {
     return try await Pull(try Find(ref), hub: h)
 }
 
@@ -368,7 +368,7 @@ public func Pull(_ ref: string, hub h: hub.Hub = hub.Hub()) async throws -> Pull
 /// Hub allows an anonymous address 500 in five minutes), then the files.
 /// remote/hub checks each download against the hash the Hub lists, and
 /// those are checked against the list's.
-public func Pull(_ p: Pick, hub h: hub.Hub = hub.Hub()) async throws -> Pulled {
+public func Pull(p: Pick, hub h: hub.Hub = hub.Hub()) async throws -> Pulled {
     var client = h
     client.Include = []
     for f in p.Files {
@@ -384,7 +384,7 @@ public func Pull(_ p: Pick, hub h: hub.Hub = hub.Hub()) async throws -> Pulled {
 }
 
 // explain says what a hub error means for a model on the list.
-func explain(_ p: Pick, _ e: hub.HubError) -> Error {
+func explain(p: Pick, e: hub.HubError) -> Error {
     switch e {
     case .gated(let r):
         return RegistryError.needsLogin(p.ID, "hf.co/\(r) is gated: accept its terms on the Hub")
@@ -407,7 +407,7 @@ func explain(_ p: Pick, _ e: hub.HubError) -> Error {
 
 /// Check is whether a repository's listed files hold what the list
 /// pinned for a pick: every file there, at its size and hash.
-public func Check(_ p: Pick, _ listed: [hub.RepoFile]) throws {
+public func Check(p: Pick, listed: [hub.RepoFile]) throws {
     for f in p.Files {
         var found: hub.RepoFile? = nil
         for l in listed where l.Path == f.Path {
@@ -427,7 +427,7 @@ public func Check(_ p: Pick, _ listed: [hub.RepoFile]) throws {
 }
 
 /// IsPulled is whether all of a pick's files are in the cache already.
-public func IsPulled(_ p: Pick, cache: hub.Cache = hub.Cache.Default()) -> bool {
+public func IsPulled(p: Pick, cache: hub.Cache = hub.Cache.Default()) -> bool {
     for f in p.Files {
         if !cache.HasBlob(hub.RepoKind.model, p.Entry.Repo, f.HubFile) {
             return false
@@ -473,7 +473,7 @@ public struct Probed {
 /// stranger would -- no token, following the Hub's redirect to its CDN --
 /// and is what came back. It shows a file can be downloaded without a
 /// login while moving a few bytes, not gigabytes.
-public func Probe(_ p: Pick, endpoint: string = "https://huggingface.co") async throws -> [Probed] {
+public func Probe(p: Pick, endpoint: string = "https://huggingface.co") async throws -> [Probed] {
     var out: [Probed] = []
     for f in p.Files {
         var segs: [string] = []
@@ -486,7 +486,7 @@ public func Probe(_ p: Pick, endpoint: string = "https://huggingface.co") async 
     return out
 }
 
-func probe(_ file: string, _ address: string) async throws -> Probed {
+func probe(file: string, address: string) async throws -> Probed {
     let client = http.Client(timeoutMs: 30000)
     var u = try url.Parse(address)
     var hops = 0

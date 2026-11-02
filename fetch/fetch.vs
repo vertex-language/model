@@ -32,7 +32,7 @@ public enum FetchError: Error, CustomStringConvertible {
 
 /// Open is the checkpoint a reference names, its files fetched when it is
 /// a Hub reference.
-public func Open(_ ref: string, hub h: hub.Hub = hub.Hub()) async throws -> model.Checkpoint {
+public func Open(ref: string, hub h: hub.Hub = hub.Hub()) async throws -> model.Checkpoint {
     if IsLocal(ref) {
         return try model.Open(fs.Path(ref))
     }
@@ -55,7 +55,7 @@ public func Open(_ ref: string, hub h: hub.Hub = hub.Hub()) async throws -> mode
 /// IsLocal is whether a reference is a path on this machine rather than a
 /// Hub reference: it starts with "/", "./", "../" or "~", or names
 /// something that exists.
-public func IsLocal(_ ref: string) -> bool {
+public func IsLocal(ref: string) -> bool {
     if ref.hasPrefix("/") || ref.hasPrefix("./") || ref.hasPrefix("../") || ref.hasPrefix("~") {
         return true
     }
@@ -79,7 +79,7 @@ public struct Choice {
 /// the top-level config, weights and tokenizer files only -- not a
 /// PyTorch copy, ONNX, or Meta's original/ -- which is all a checkpoint
 /// reads.
-public func Choose(_ files: [hub.RepoFile], ref: hub.Ref) throws -> Choice {
+public func Choose(files: [hub.RepoFile], ref: hub.Ref) throws -> Choice {
     if !ref.File.isEmpty {
         let lower = ref.File.lowercased()
         if lower.hasSuffix(".gguf") {
@@ -118,7 +118,7 @@ public struct Info {
 /// and says what it is: architecture, format, size and the config keys
 /// asked for, read through aliases (a task's spellings for a GGUF), with
 /// nothing put on a device.
-public func Inspect(_ ref: string, keys: [string] = [], aliases: model.Aliases = model.Aliases()) async throws -> Info {
+public func Inspect(ref: string, keys: [string] = [], aliases: model.Aliases = model.Aliases()) async throws -> Info {
     let ck = try await Open(ref)
     ck.Aliases = aliases
     var bytes: int64 = 0

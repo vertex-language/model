@@ -11,7 +11,7 @@ import (
 
 var failures = 0
 
-func check(_ ok: bool, _ msg: string) {
+func check(ok: bool, msg: string) {
     if ok {
         print("ok    \(msg)")
     } else {
@@ -20,7 +20,7 @@ func check(_ ok: bool, _ msg: string) {
     }
 }
 
-func fnv1a(_ p: UnsafePointer<uint8>, _ n: int) -> uint64 {
+func fnv1a(p: UnsafePointer<uint8>, n: int) -> uint64 {
     var h: uint64 = 0xcbf29ce484222325
     for i in 0..<n {
         h ^= uint64(p[i])
@@ -29,7 +29,7 @@ func fnv1a(_ p: UnsafePointer<uint8>, _ n: int) -> uint64 {
     return h
 }
 
-func hex16(_ v: uint64) -> string {
+func hex16(v: uint64) -> string {
     let digits: [Character] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
     var s = ""
     var i = 60
@@ -40,7 +40,7 @@ func hex16(_ v: uint64) -> string {
     return s
 }
 
-func dump(_ f: safetensors.File) -> [string] {
+func dump(f: safetensors.File) -> [string] {
     var out: [string] = []
     for t in f.Tensors {
         let shape = t.Shape.map { "\($0)" }.joined(separator: ",")
@@ -55,7 +55,7 @@ func dump(_ f: safetensors.File) -> [string] {
 
 // refused writes bytes to a file, opens it, and reports whether it was
 // refused with a message holding why.
-func refused(_ dir: fs.Path, _ name: string, _ bytes: [uint8], _ why: string) {
+func refused(dir: fs.Path, name: string, bytes: [uint8], why: string) {
     let p = dir / "\(name).safetensors"
     do {
         try fs.WriteFile(p, bytes)
@@ -68,7 +68,7 @@ func refused(_ dir: fs.Path, _ name: string, _ bytes: [uint8], _ why: string) {
 }
 
 // raw is a file of a header given as text and data bytes.
-func raw(_ header: string, _ data: [uint8]) -> [uint8] {
+func raw(header: string, data: [uint8]) -> [uint8] {
     let h = [uint8](header.utf8)
     var out: [uint8] = []
     var n = uint64(h.count)

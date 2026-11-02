@@ -102,7 +102,7 @@ public final class File {
     let _map: mmap.Mapping
     let _byName: [string: int]
 
-    init(_ map: mmap.Mapping, _ tensors: [TensorInfo]) {
+    init(map: mmap.Mapping, tensors: [TensorInfo]) {
         self._map = map
         self.Tensors = tensors
         var byName: [string: int] = [:]
@@ -113,7 +113,7 @@ public final class File {
     }
 
     /// Tensor is the named tensor, or nil.
-    public func Tensor(_ name: string) -> TensorInfo? {
+    public func Tensor(name: string) -> TensorInfo? {
         guard let i = _byName[name] else { return nil }
         return Tensors[i]
     }
@@ -122,19 +122,19 @@ public final class File {
     public var Mapping: mmap.Mapping { return _map }
 
     /// Bytes is where a tensor's bytes lie in the mapping.
-    public func Bytes(_ t: TensorInfo) -> UnsafePointer<uint8> {
+    public func Bytes(t: TensorInfo) -> UnsafePointer<uint8> {
         return _map.Bytes! + t.Offset
     }
 
     /// Copy is a tensor's bytes, copied out.
-    public func Copy(_ t: TensorInfo) -> [uint8] {
+    public func Copy(t: TensorInfo) -> [uint8] {
         return _map.Copy(from: t.Offset, count: t.Size)
     }
 }
 
 /// Open maps a PyTorch checkpoint and reads its tensors' names, shapes and
 /// places; no tensor byte is read.
-public func Open(_ path: fs.Path) throws -> File {
+public func Open(path: fs.Path) throws -> File {
     let map = try mmap.Map(path)
     guard let base = map.Bytes else {
         throw FormatError.invalid("\(path.String()) is empty")
@@ -160,7 +160,7 @@ public func Open(_ path: fs.Path) throws -> File {
     let root = try u.Load()
 
     var tensors: [TensorInfo] = []
-    func add(_ name: string, _ v: Value) throws {
+    func add(name: string, v: Value) throws {
         switch v {
         case .tensor(let t):
             guard let e = entries[prefix + "data/" + t.key] else {
@@ -208,7 +208,7 @@ struct Entry {
 }
 
 // copied is n bytes from p.
-func copied(_ p: UnsafePointer<uint8>, _ n: int) -> [uint8] {
+func copied(p: UnsafePointer<uint8>, n: int) -> [uint8] {
     var out = [uint8](repeating: 0, count: n)
     var i = 0
     while i < n {
@@ -218,22 +218,22 @@ func copied(_ p: UnsafePointer<uint8>, _ n: int) -> [uint8] {
     return out
 }
 
-func u16(_ p: UnsafePointer<uint8>, _ i: int) -> int {
+func u16(p: UnsafePointer<uint8>, i: int) -> int {
     return int(p[i]) | int(p[i + 1]) << 8
 }
 
-func u32(_ p: UnsafePointer<uint8>, _ i: int) -> int {
+func u32(p: UnsafePointer<uint8>, i: int) -> int {
     return int(p[i]) | int(p[i + 1]) << 8 | int(p[i + 2]) << 16 | int(p[i + 3]) << 24
 }
 
-func u64(_ p: UnsafePointer<uint8>, _ i: int) -> int {
+func u64(p: UnsafePointer<uint8>, i: int) -> int {
     return u32(p, i) | u32(p, i + 4) << 32
 }
 
 // zipEntries reads the central directory over the mapping, zip64
 // included: every stored entry's name and the place of its data. A
 // deflated entry is refused, since its bytes could not be read in place.
-func zipEntries(_ p: UnsafePointer<uint8>, _ n: int) throws -> [string: Entry] {
+func zipEntries(p: UnsafePointer<uint8>, n: int) throws -> [string: Entry] {
     var eocd = -1
     var i = n - 22
     let stop = max(0, n - 22 - 65535)
@@ -336,7 +336,7 @@ let storageTypes: [string: DType] = [
     "ByteStorage": .U8, "BoolStorage": .Bool,
 ]
 
-func allowed(_ module: string, _ name: string) -> bool {
+func allowed(module: string, name: string) -> bool {
     switch module + "." + name {
     case "collections.OrderedDict", "torch._utils._rebuild_tensor_v2", "torch._utils._rebuild_parameter":
         return true
@@ -353,7 +353,7 @@ struct Unpickler {
     var marks: [int] = []
     var memo: [int: Value] = [:]
 
-    init(_ p: UnsafePointer<uint8>, _ n: int) {
+    init(p: UnsafePointer<uint8>, n: int) {
         self.p = p
         self.n = n
     }
@@ -365,14 +365,14 @@ struct Unpickler {
         return b
     }
 
-    mutating func take(_ k: int) throws -> UnsafePointer<uint8> {
+    mutating func take(k: int) throws -> UnsafePointer<uint8> {
         if k < 0 || at + k > n { throw FormatError.invalid("the pickle ends early") }
         let q = p + at
         at += k
         return q
     }
 
-    mutating func le(_ k: int) throws -> int {
+    mutating func le(k: int) throws -> int {
         let q = try take(k)
         var v = 0
         var i = k - 1
@@ -383,7 +383,7 @@ struct Unpickler {
         return v
     }
 
-    mutating func text(_ k: int) throws -> string {
+    mutating func text(k: int) throws -> string {
         let q = try take(k)
         return string(decoding: copied(q, k), as: UTF8.self)
     }
@@ -549,7 +549,7 @@ struct Unpickler {
         }
     }
 
-    func call(_ module: string, _ name: string, _ args: [Value]) throws -> Value {
+    func call(module: string, name: string, args: [Value]) throws -> Value {
         switch name {
         case "OrderedDict":
             return .dict([])
@@ -570,7 +570,7 @@ struct Unpickler {
         }
     }
 
-    func ints(_ vs: [Value]) throws -> [int] {
+    func ints(vs: [Value]) throws -> [int] {
         var out: [int] = []
         for v in vs {
             guard case .int(let i) = v else { throw FormatError.invalid("a size that is not an integer") }

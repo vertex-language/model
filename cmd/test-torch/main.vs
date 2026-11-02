@@ -16,12 +16,12 @@ import (
 
 var failures = 0
 
-func check(_ ok: bool, _ what: string) {
+func check(ok: bool, what: string) {
     print(ok ? "ok    \(what)" : "FAIL  \(what)")
     if !ok { failures += 1 }
 }
 
-func fnv(_ p: UnsafePointer<uint8>, _ n: int) -> uint64 {
+func fnv(p: UnsafePointer<uint8>, n: int) -> uint64 {
     var h: uint64 = 0xcbf29ce484222325
     var i = 0
     while i < n {
@@ -31,13 +31,13 @@ func fnv(_ p: UnsafePointer<uint8>, _ n: int) -> uint64 {
     return h
 }
 
-func hex16(_ v: uint64) -> string {
+func hex16(v: uint64) -> string {
     let s = string(v, radix: 16)
     return string(repeating: "0", count: 16 - s.count) + s
 }
 
 // dump is what torch_dump.py prints for a file.
-func dump(_ f: torch.File) -> [string] {
+func dump(f: torch.File) -> [string] {
     var out: [string] = []
     for t in f.Tensors {
         var shape = t.Shape.map { "\($0)" }.joined(separator: "x")
@@ -48,7 +48,7 @@ func dump(_ f: torch.File) -> [string] {
     return out
 }
 
-func against(_ path: fs.Path, _ golden: string) {
+func against(path: fs.Path, golden: string) {
     do {
         let f = try torch.Open(path)
         let want = try fs.ReadText(fs.Path("cmd/test-torch/golden/" + golden)).split(separator: "\n").map { String($0) }
@@ -71,7 +71,7 @@ func against(_ path: fs.Path, _ golden: string) {
 // throughCheckpoint opens a directory with model.Open, which finds its
 // PyTorch weights (and not the voices/ beside them), and dumps each
 // tensor from what Copy hands back.
-func throughCheckpoint(_ dir: fs.Path, _ golden: string) {
+func throughCheckpoint(dir: fs.Path, golden: string) {
     do {
         let ck = try model.Open(dir)
         let want = try fs.ReadText(fs.Path("cmd/test-torch/golden/" + golden)).split(separator: "\n").map { String($0) }

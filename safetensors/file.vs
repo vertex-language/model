@@ -84,7 +84,7 @@ public enum DType: Equatable {
     }
 
     /// Parse is the dtype a header names, or nil.
-    public static func Parse(_ name: string) -> DType? {
+    public static func Parse(name: string) -> DType? {
         for d in all {
             if d.Name == name {
                 return d
@@ -143,7 +143,7 @@ public final class File {
     let _index: [string: int]
     let _map: mmap.Mapping
 
-    init(_ tensors: [TensorInfo], _ metadata: [string: string], _ dataOffset: int, _ map: mmap.Mapping) {
+    init(tensors: [TensorInfo], metadata: [string: string], dataOffset: int, map: mmap.Mapping) {
         self.Tensors = tensors
         self.Metadata = metadata
         self.DataOffset = dataOffset
@@ -156,7 +156,7 @@ public final class File {
     }
 
     /// Tensor is the tensor named name, or nil.
-    public func Tensor(_ name: string) -> TensorInfo? {
+    public func Tensor(name: string) -> TensorInfo? {
         guard let i = _index[name] else { return nil }
         return Tensors[i]
     }
@@ -167,24 +167,24 @@ public final class File {
 
     /// Bytes is where a tensor's bytes lie, in the mapping: valid as long
     /// as this File is.
-    public func Bytes(_ t: TensorInfo) -> UnsafePointer<uint8> {
+    public func Bytes(t: TensorInfo) -> UnsafePointer<uint8> {
         return _map.Bytes! + t.Offset
     }
 
     /// Copy is a tensor's bytes, copied out.
-    public func Copy(_ t: TensorInfo) -> [uint8] {
+    public func Copy(t: TensorInfo) -> [uint8] {
         return _map.Copy(from: t.Offset, count: t.Size)
     }
 }
 
 /// Open maps the safetensors file at path and reads its header. Tensor
 /// bytes are not read until they are used.
-public func Open(_ path: fs.Path) throws -> File {
+public func Open(path: fs.Path) throws -> File {
     let m = try mmap.Map(path)
     return try parse(m)
 }
 
-func parse(_ m: mmap.Mapping) throws -> File {
+func parse(m: mmap.Mapping) throws -> File {
     if m.Count < 8 {
         throw FormatError.malformed("\(m.Count) bytes: too short for the header length")
     }
@@ -302,7 +302,7 @@ public struct Entry {
 /// Encode is a safetensors file of entries, in their order, and metadata.
 /// The header is padded with spaces to a multiple of 8 bytes, as the Rust
 /// crate pads it, so every tensor's bytes start as aligned as the file.
-public func Encode(_ entries: [Entry], metadata: [string: string] = [:]) throws -> [uint8] {
+public func Encode(entries: [Entry], metadata: [string: string] = [:]) throws -> [uint8] {
     var head = json.Object()
     if !metadata.isEmpty {
         var meta = json.Object()
@@ -347,6 +347,6 @@ public func Encode(_ entries: [Entry], metadata: [string: string] = [:]) throws 
 }
 
 /// Save writes entries to path as a safetensors file.
-public func Save(_ entries: [Entry], to path: fs.Path, metadata: [string: string] = [:]) throws {
+public func Save(entries: [Entry], to path: fs.Path, metadata: [string: string] = [:]) throws {
     try fs.WriteFile(path, try Encode(entries, metadata: metadata), atomic: true)
 }

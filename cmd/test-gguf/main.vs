@@ -11,28 +11,28 @@ import (
 
 var failures = 0
 
-func check(_ ok: bool, _ what: string) {
+func check(ok: bool, what: string) {
     print(ok ? "ok    \(what)" : "FAIL  \(what)")
     if !ok { failures += 1 }
 }
 
 // ---- the dump, in the oracle's form ----
 
-func hex(_ v: uint64, _ digits: int) -> string {
+func hex(v: uint64, digits: int) -> string {
     let s = String(v, radix: 16)
     return String(repeating: "0", count: max(0, digits - s.count)) + s
 }
 
-func fnv(_ h: inout uint64, _ b: uint8) {
+func fnv(h: inout uint64, b: uint8) {
     h ^= uint64(b)
     h = h &* 1099511628211
 }
 
-func fnvBytes(_ h: inout uint64, _ v: uint64, _ n: int) {
+func fnvBytes(h: inout uint64, v: uint64, n: int) {
     for i in 0..<n { fnv(&h, uint8(truncatingIfNeeded: v >> uint64(8 * i))) }
 }
 
-func typeName(_ t: gguf.ValueType) -> string {
+func typeName(t: gguf.ValueType) -> string {
     switch t {
     case .U8: return "u8"
     case .I8: return "i8"
@@ -50,7 +50,7 @@ func typeName(_ t: gguf.ValueType) -> string {
     }
 }
 
-func scalar(_ v: gguf.Value) -> string {
+func scalar(v: gguf.Value) -> string {
     switch v {
     case .U8(let x): return "\(x)"
     case .I8(let x): return "\(x)"
@@ -68,7 +68,7 @@ func scalar(_ v: gguf.Value) -> string {
     }
 }
 
-func hashElement(_ h: inout uint64, _ v: gguf.Value) {
+func hashElement(h: inout uint64, v: gguf.Value) {
     switch v {
     case .U8(let x): fnv(&h, x)
     case .I8(let x): fnv(&h, uint8(bitPattern: x))
@@ -88,7 +88,7 @@ func hashElement(_ h: inout uint64, _ v: gguf.Value) {
     }
 }
 
-func dump(_ f: gguf.File) -> [string] {
+func dump(f: gguf.File) -> [string] {
     var out = ["version \(f.Version)", "alignment \(f.Alignment)", "data \(f.DataOffset)"]
     for key in f.Keys {
         let v = f.Value(key)!
@@ -143,19 +143,19 @@ check(q.Tensor("output.weight")!.Type == .Q8_0, "output is q8_0")
 
 // ---- malformed files ----
 
-func le32(_ v: uint32) -> [uint8] {
+func le32(v: uint32) -> [uint8] {
     return [uint8(truncatingIfNeeded: v), uint8(truncatingIfNeeded: v >> 8), uint8(truncatingIfNeeded: v >> 16), uint8(truncatingIfNeeded: v >> 24)]
 }
 
-func le64(_ v: uint64) -> [uint8] {
+func le64(v: uint64) -> [uint8] {
     return le32(uint32(truncatingIfNeeded: v)) + le32(uint32(truncatingIfNeeded: v >> 32))
 }
 
-func text(_ s: string) -> [uint8] {
+func text(s: string) -> [uint8] {
     return le64(uint64(s.utf8.count)) + Array(s.utf8)
 }
 
-func header(_ tensors: uint64, _ kvs: uint64) -> [uint8] {
+func header(tensors: uint64, kvs: uint64) -> [uint8] {
     return Array("GGUF".utf8) + le32(3) + le64(tensors) + le64(kvs)
 }
 
@@ -164,7 +164,7 @@ try? fs.RemoveAll(dir)
 try fs.CreateDir(dir)
 var n = 0
 
-func refused(_ bytes: [uint8], _ what: string, _ reason: string) {
+func refused(bytes: [uint8], what: string, reason: string) {
     n += 1
     let path = dir.Join(fs.Path("bad\(n).gguf"))
     do {
@@ -195,13 +195,13 @@ refused(header(0, 1) + text("general.alignment") + le32(4) + le32(24), "an align
 refused(header(0, 1) + text("general.alignment") + le32(5) + le32(32), "an alignment not a u32", "must be a u32")
 refused(header(1 << 40, 0), "more tensors than the file holds", "more than the file holds")
 
-func tensor(_ name: string, _ dims: [uint64], _ type: uint32, _ offset: uint64) -> [uint8] {
+func tensor(name: string, dims: [uint64], type: uint32, offset: uint64) -> [uint8] {
     var b = text(name) + le32(uint32(dims.count))
     for d in dims { b += le64(d) }
     return b + le32(type) + le64(offset)
 }
 
-func withData(_ b: [uint8], _ n: int) -> [uint8] {
+func withData(b: [uint8], n: int) -> [uint8] {
     var out = b
     while out.count % 32 != 0 { out.append(0) }
     return out + [uint8](repeating: 0, count: n)

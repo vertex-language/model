@@ -21,7 +21,7 @@ func usage() -> int32 {
     return 2
 }
 
-func size(_ n: int64) -> string {
+func size(n: int64) -> string {
     let units = ["B", "KB", "MB", "GB", "TB"]
     var v = float64(n)
     var u = 0
@@ -36,7 +36,7 @@ func size(_ n: int64) -> string {
     return "\(tenths / 10).\(tenths % 10) \(units[u])"
 }
 
-func pad(_ s: string, _ n: int) -> string {
+func pad(s: string, n: int) -> string {
     var out = s
     while out.count < n {
         out += " "
@@ -44,7 +44,7 @@ func pad(_ s: string, _ n: int) -> string {
     return out
 }
 
-func list(_ task: string?) {
+func list(task: string?) {
     for e in registry.Entries() where task == nil || e.Task == task! {
         let def = e.QuantNamed(e.Default)
         let pulled = def != nil && registry.IsPulled(registry.Pick(Entry: e, Quant: def!))
@@ -52,7 +52,7 @@ func list(_ task: string?) {
     }
 }
 
-func show(_ ref: string) throws {
+func show(ref: string) throws {
     let p = try registry.Find(ref)
     let e = p.Entry
     print("\(p.ID)")
@@ -72,7 +72,7 @@ func show(_ ref: string) throws {
     print("  pulled    \(registry.IsPulled(p) ? "yes" : "no")")
 }
 
-func pull(_ ref: string, quiet: bool) async throws {
+func pull(ref: string, quiet: bool) async throws {
     let p = try registry.Find(ref)
     var h = hub.Hub()
     if !quiet {
@@ -90,7 +90,7 @@ func pull(_ ref: string, quiet: bool) async throws {
     print(got.Path.String())
 }
 
-func probe(_ picks: [registry.Pick]) async -> int32 {
+func probe(picks: [registry.Pick]) async -> int32 {
     var bad = 0
     var n = 0
     for p in picks {

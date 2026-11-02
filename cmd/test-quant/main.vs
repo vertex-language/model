@@ -13,17 +13,17 @@ import (
 
 var failures = 0
 
-func check(_ ok: bool, _ what: string) {
+func check(ok: bool, what: string) {
     print(ok ? "ok    \(what)" : "FAIL  \(what)")
     if !ok { failures += 1 }
 }
 
-func hex(_ v: uint64) -> string {
+func hex(v: uint64) -> string {
     let s = String(v, radix: 16)
     return String(repeating: "0", count: max(0, 16 - s.count)) + s
 }
 
-func hash(_ xs: [float32]) -> uint64 {
+func hash(xs: [float32]) -> uint64 {
     var h: uint64 = 1469598103934665603
     for x in xs {
         var b = x.bitPattern
@@ -36,7 +36,7 @@ func hash(_ xs: [float32]) -> uint64 {
     return h
 }
 
-func decode(_ d: gpu.Device, _ f: gguf.File, _ t: gguf.TensorInfo) async throws -> [float32] {
+func decode(d: gpu.Device, f: gguf.File, t: gguf.TensorInfo) async throws -> [float32] {
     let w = try await d.Upload(f.Copy(t))
     let y = try await d.CreateBuffer(of: float32.self, count: t.Count)
     switch t.Type {

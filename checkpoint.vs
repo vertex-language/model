@@ -141,7 +141,7 @@ public final class Checkpoint {
 
     /// Info is the tensor a Hugging Face name means -- for a GGUF through
     /// Aliases, or the GGUF name given -- or nil where there is none.
-    public func Info(_ name: string, gguf: string? = nil) -> TensorInfo? {
+    public func Info(name: string, gguf: string? = nil) -> TensorInfo? {
         if Format == .safetensors {
             return _info[name]
         }
@@ -155,14 +155,14 @@ public final class Checkpoint {
     }
 
     /// Has is whether the tensor is there.
-    public func Has(_ name: string, gguf: string? = nil) -> bool {
+    public func Has(name: string, gguf: string? = nil) -> bool {
         return Info(name, gguf: gguf) != nil
     }
 
     /// Tensor is the named tensor on device d. Where the device can read
     /// the file's mapping in place (unified memory), the tensor is a slice
     /// of it and nothing is copied; else its bytes are uploaded.
-    public func Tensor(_ name: string, gguf: string? = nil, on d: gpu.Device) async throws -> tensor.Tensor {
+    public func Tensor(name: string, gguf: string? = nil, on d: gpu.Device) async throws -> tensor.Tensor {
         guard let t = Info(name, gguf: gguf) else {
             throw OpenError.unsupported("\(Path.String()) has no tensor \(name)")
         }
@@ -177,12 +177,12 @@ public final class Checkpoint {
 
     /// Float32 is the named tensor as float32 on d, decoded if it is not:
     /// what a norm's weight is.
-    public func Float32(_ name: string, gguf: string? = nil, on d: gpu.Device) async throws -> tensor.Tensor {
+    public func Float32(name: string, gguf: string? = nil, on d: gpu.Device) async throws -> tensor.Tensor {
         return try await Tensor(name, gguf: gguf, on: d).ToF32()
     }
 
     /// Copy is a tensor's bytes as its file holds them, copied out.
-    public func Copy(_ t: TensorInfo) -> [uint8] {
+    public func Copy(t: TensorInfo) -> [uint8] {
         var out = [uint8](repeating: 0, count: t.Size)
         let p = bytes(t)
         out.withUnsafeMutableBufferPointer { dst in
@@ -196,7 +196,7 @@ public final class Checkpoint {
     }
 
     // bytes is where a tensor's bytes lie in its file's mapping.
-    func bytes(_ t: TensorInfo) -> UnsafePointer<uint8> {
+    func bytes(t: TensorInfo) -> UnsafePointer<uint8> {
         if let f = _gguf {
             return f.Mapping.Bytes! + t.offset
         }
@@ -208,7 +208,7 @@ public final class Checkpoint {
 
     // wrap is file i's whole mapping as one buffer d reads in place, made
     // once a device; nil where d will not take it.
-    func wrap(_ i: int, on d: gpu.Device) throws -> gpu.Buffer<uint8>? {
+    func wrap(i: int, on d: gpu.Device) throws -> gpu.Buffer<uint8>? {
         if _device == nil || !(_device! === d) {
             _device = d
             let n = _gguf != nil ? 1 : (Format == .torch ? _pt.count : _st.count)
@@ -282,7 +282,7 @@ public final class Checkpoint {
 
 // ggufTokenizer is a GGUF's tokenizer.ggml.* data: SentencePiece ("llama")
 // or byte-level BPE ("gpt2", its pre-tokenizer named by tokenizer.ggml.pre).
-func ggufTokenizer(_ f: gguf.File) throws -> tokenizer.Tokenizer {
+func ggufTokenizer(f: gguf.File) throws -> tokenizer.Tokenizer {
     let model = f.Text("tokenizer.ggml.model") ?? "llama"
     guard let tokens = f.Texts("tokenizer.ggml.tokens") else {
         throw OpenError.unsupported("no tokenizer.ggml tokens")
@@ -335,7 +335,7 @@ func ggufTokenizer(_ f: gguf.File) throws -> tokenizer.Tokenizer {
     }
 }
 
-func readJSON(_ p: fs.Path) -> json.Value? {
+func readJSON(p: fs.Path) -> json.Value? {
     guard let b = try? fs.ReadFile(p) else { return nil }
     return try? json.Parse(bytes: b)
 }
@@ -344,7 +344,7 @@ func readJSON(_ p: fs.Path) -> json.Value? {
 /// config.json beside it); or a directory holding config.json and
 /// safetensors -- one file, shards with model.safetensors.index.json, or
 /// shards without -- or else one GGUF file.
-public func Open(_ path: fs.Path) throws -> Checkpoint {
+public func Open(path: fs.Path) throws -> Checkpoint {
     let meta = try fs.Metadata(path)
     if !meta.IsDir() {
         let name = (path.Name() ?? "").lowercased()
@@ -399,13 +399,13 @@ public func Open(_ path: fs.Path) throws -> Checkpoint {
 }
 
 // isTorch is whether a file name is a PyTorch checkpoint's.
-func isTorch(_ name: string) -> bool {
+func isTorch(name: string) -> bool {
     return name.hasSuffix(".pth") || name.hasSuffix(".pt") || (name.hasPrefix("pytorch_model") && name.hasSuffix(".bin"))
 }
 
 // openTorch opens PyTorch checkpoints beside an optional config.json: a
 // model whose config names no architecture (Kokoro's) opens with none.
-func openTorch(_ dir: fs.Path, _ files: [fs.Path], _ path: fs.Path) throws -> Checkpoint {
+func openTorch(dir: fs.Path, files: [fs.Path], path: fs.Path) throws -> Checkpoint {
     var cfg = readJSON(dir / "config.json")
     if cfg == nil {
         cfg = try json.Parse(bytes: Array("{}".utf8))
@@ -435,7 +435,7 @@ func openTorch(_ dir: fs.Path, _ files: [fs.Path], _ path: fs.Path) throws -> Ch
                       st: [], pt: opened, gguf: nil, info: info, names: names)
 }
 
-func openGGUF(_ path: fs.Path) throws -> Checkpoint {
+func openGGUF(path: fs.Path) throws -> Checkpoint {
     let f = try gguf.Open(path)
     guard let arch = f.Architecture else {
         throw OpenError.unsupported("\(path.String()) has no general.architecture")
@@ -452,7 +452,7 @@ func openGGUF(_ path: fs.Path) throws -> Checkpoint {
                       st: [], gguf: f, info: info, names: names)
 }
 
-func openSafetensors(_ dir: fs.Path, _ shards: [fs.Path], _ path: fs.Path) throws -> Checkpoint {
+func openSafetensors(dir: fs.Path, shards: [fs.Path], path: fs.Path) throws -> Checkpoint {
     guard let cfg = readJSON(dir / "config.json") else {
         throw OpenError.unsupported("no config.json beside the safetensors in \(dir.String())")
     }
@@ -483,7 +483,7 @@ func openSafetensors(_ dir: fs.Path, _ shards: [fs.Path], _ path: fs.Path) throw
                       st: files, gguf: nil, info: info, names: names)
 }
 
-func tensorType(_ t: gguf.TensorType) -> tensor.DType? {
+func tensorType(t: gguf.TensorType) -> tensor.DType? {
     switch t {
     case .F32: return .F32
     case .F16: return .F16
@@ -496,7 +496,7 @@ func tensorType(_ t: gguf.TensorType) -> tensor.DType? {
     }
 }
 
-func tensorType(_ t: safetensors.DType) -> tensor.DType? {
+func tensorType(t: safetensors.DType) -> tensor.DType? {
     switch t {
     case .F32: return .F32
     case .F16: return .F16
@@ -505,7 +505,7 @@ func tensorType(_ t: safetensors.DType) -> tensor.DType? {
     }
 }
 
-func tensorType(_ t: torch.DType) -> tensor.DType? {
+func tensorType(t: torch.DType) -> tensor.DType? {
     switch t {
     case .F32: return .F32
     case .F16: return .F16

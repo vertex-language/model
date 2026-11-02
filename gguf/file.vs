@@ -56,8 +56,8 @@ public final class File {
     let _index: [string: int]
     let _map: mmap.Mapping
 
-    init(_ version: int, _ keys: [string], _ values: [string: Value], _ tensors: [TensorInfo],
-         _ alignment: int, _ dataOffset: int, _ map: mmap.Mapping) {
+    init(version: int, keys: [string], values: [string: Value], tensors: [TensorInfo],
+         alignment: int, dataOffset: int, map: mmap.Mapping) {
         self.Version = version
         self.Keys = keys
         self._values = values
@@ -73,38 +73,38 @@ public final class File {
     }
 
     /// Value is the metadata value under key, or nil.
-    public func Value(_ key: string) -> Value? {
+    public func Value(key: string) -> Value? {
         return _values[key]
     }
 
     /// Text is the string under key, or nil where there is none.
-    public func Text(_ key: string) -> string? {
+    public func Text(key: string) -> string? {
         return _values[key]?.AsText
     }
 
     /// Integer is the integer under key, of any width, or nil.
-    public func Integer(_ key: string) -> int? {
+    public func Integer(key: string) -> int? {
         return _values[key]?.AsInteger
     }
 
     /// Number is the number under key, float or integer, or nil.
-    public func Number(_ key: string) -> float64? {
+    public func Number(key: string) -> float64? {
         return _values[key]?.AsNumber
     }
 
     /// Flag is the bool under key, or nil.
-    public func Flag(_ key: string) -> bool? {
+    public func Flag(key: string) -> bool? {
         return _values[key]?.AsFlag
     }
 
     /// Texts is the array of strings under key, or nil.
-    public func Texts(_ key: string) -> [string]? {
+    public func Texts(key: string) -> [string]? {
         guard case .Array(let t, let xs)? = _values[key], t == .Text else { return nil }
         return xs.map { $0.AsText! }
     }
 
     /// Integers is the array of integers under key, or nil.
-    public func Integers(_ key: string) -> [int]? {
+    public func Integers(key: string) -> [int]? {
         guard case .Array(_, let xs)? = _values[key] else { return nil }
         var out: [int] = []
         for x in xs {
@@ -115,7 +115,7 @@ public final class File {
     }
 
     /// Numbers is the array of numbers under key, or nil.
-    public func Numbers(_ key: string) -> [float64]? {
+    public func Numbers(key: string) -> [float64]? {
         guard case .Array(_, let xs)? = _values[key] else { return nil }
         var out: [float64] = []
         for x in xs {
@@ -131,7 +131,7 @@ public final class File {
     }
 
     /// Tensor is the tensor named name, or nil.
-    public func Tensor(_ name: string) -> TensorInfo? {
+    public func Tensor(name: string) -> TensorInfo? {
         guard let i = _index[name] else { return nil }
         return Tensors[i]
     }
@@ -142,24 +142,24 @@ public final class File {
 
     /// Bytes is where a tensor's bytes lie, in the mapping: valid as long
     /// as this File is.
-    public func Bytes(_ t: TensorInfo) -> UnsafePointer<uint8> {
+    public func Bytes(t: TensorInfo) -> UnsafePointer<uint8> {
         return _map.Bytes! + t.Offset
     }
 
     /// Copy is a tensor's bytes, copied out.
-    public func Copy(_ t: TensorInfo) -> [uint8] {
+    public func Copy(t: TensorInfo) -> [uint8] {
         return _map.Copy(from: t.Offset, count: t.Size)
     }
 }
 
 /// Open maps the GGUF file at path and reads its header. Tensor bytes are
 /// not read until they are used.
-public func Open(_ path: fs.Path) throws -> File {
+public func Open(path: fs.Path) throws -> File {
     let m = try mmap.Map(path)
     return try parse(m)
 }
 
-func parse(_ m: mmap.Mapping) throws -> File {
+func parse(m: mmap.Mapping) throws -> File {
     var r = Cursor(m.Bytes, m.Count)
     if try r.U32("the magic") != magic {
         throw FormatError.malformed("not a GGUF file: the magic is not 'GGUF'")
@@ -267,11 +267,11 @@ func parse(_ m: mmap.Mapping) throws -> File {
     return File(int(version), keys, values, tensors, alignment, dataOffset, m)
 }
 
-func pad(_ n: int, _ alignment: int) -> int {
+func pad(n: int, alignment: int) -> int {
     return (n + alignment - 1) / alignment * alignment
 }
 
-func readValue(_ r: inout Cursor, _ key: string) throws -> Value {
+func readValue(r: inout Cursor, key: string) throws -> Value {
     let raw = try r.U32("the type of '\(key)'")
     guard let type = ValueType(rawValue: raw) else {
         throw FormatError.malformed("key '\(key)' has unknown type \(raw)")
@@ -292,7 +292,7 @@ func readValue(_ r: inout Cursor, _ key: string) throws -> Value {
     return .Array(elem, xs)
 }
 
-func minSize(_ t: ValueType) -> int {
+func minSize(t: ValueType) -> int {
     switch t {
     case .U8, .I8, .Bool: return 1
     case .U16, .I16: return 2
@@ -302,7 +302,7 @@ func minSize(_ t: ValueType) -> int {
     }
 }
 
-func readScalar(_ r: inout Cursor, _ t: ValueType, _ key: string) throws -> Value {
+func readScalar(r: inout Cursor, t: ValueType, key: string) throws -> Value {
     switch t {
     case .U8: return .U8(try r.U8(key))
     case .I8: return .I8(int8(bitPattern: try r.U8(key)))

@@ -10,27 +10,27 @@ struct Cursor {
     let Count: int
     var Offset: int = 0
 
-    init(_ p: UnsafePointer<uint8>?, _ count: int) {
+    init(p: UnsafePointer<uint8>?, count: int) {
         self._p = p
         self.Count = count
     }
 
     var Remaining: int { return Count - Offset }
 
-    func need(_ n: int, _ what: string) throws {
+    func need(n: int, what: string) throws {
         if n < 0 || n > Remaining {
             throw FormatError.malformed("\(what) runs past the end of the file, at byte \(Offset)")
         }
     }
 
-    mutating func U8(_ what: string) throws -> uint8 {
+    mutating func U8(what: string) throws -> uint8 {
         try need(1, what)
         let v = _p![Offset]
         Offset += 1
         return v
     }
 
-    mutating func U16(_ what: string) throws -> uint16 {
+    mutating func U16(what: string) throws -> uint16 {
         try need(2, what)
         let p = _p!
         let v = uint16(p[Offset]) | uint16(p[Offset + 1]) << 8
@@ -38,7 +38,7 @@ struct Cursor {
         return v
     }
 
-    mutating func U32(_ what: string) throws -> uint32 {
+    mutating func U32(what: string) throws -> uint32 {
         try need(4, what)
         let p = _p!
         var v: uint32 = 0
@@ -51,7 +51,7 @@ struct Cursor {
         return v
     }
 
-    mutating func U64(_ what: string) throws -> uint64 {
+    mutating func U64(what: string) throws -> uint64 {
         try need(8, what)
         let p = _p!
         var v: uint64 = 0
@@ -66,7 +66,7 @@ struct Cursor {
 
     /// Length is a u64 count that must fit what is left, at least min
     /// bytes an element.
-    mutating func Length(_ min: int, _ what: string) throws -> int {
+    mutating func Length(min: int, what: string) throws -> int {
         let n = try U64(what)
         if n > uint64(Remaining / (min > 0 ? min : 1)) {
             throw FormatError.malformed("\(what) of \(n) is more than the file holds")
@@ -74,7 +74,7 @@ struct Cursor {
         return int(n)
     }
 
-    mutating func Text(_ what: string) throws -> string {
+    mutating func Text(what: string) throws -> string {
         let n = try Length(1, what)
         if n > maxString {
             throw FormatError.malformed("\(what) is \(n) bytes, over the \(maxString) allowed")

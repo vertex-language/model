@@ -135,7 +135,7 @@ public enum TensorType: uint32 {
 
     /// RowSize is the bytes a row of n elements takes; n is a multiple of
     /// BlockSize.
-    public func RowSize(_ n: int) -> int {
+    public func RowSize(n: int) -> int {
         return n / BlockSize * TypeSize
     }
 }

@@ -38,7 +38,7 @@ public struct Config {
     public var Raw: json.Value? { return hf }
 
     /// Has is whether the key is set.
-    public func Has(_ key: string, gguf: string? = nil) -> bool {
+    public func Has(key: string, gguf: string? = nil) -> bool {
         if let v = hf {
             if let x = v[key] {
                 return !x.IsNull
@@ -49,7 +49,7 @@ public struct Config {
         return file!.Value(k) != nil
     }
 
-    public func Int(_ key: string, gguf: string? = nil) -> int? {
+    public func Int(key: string, gguf: string? = nil) -> int? {
         if let v = hf {
             if let n = v[key]?.Int {
                 return int(n)
@@ -67,7 +67,7 @@ public struct Config {
         return nil
     }
 
-    public func Double(_ key: string, gguf: string? = nil) -> float64? {
+    public func Double(key: string, gguf: string? = nil) -> float64? {
         if let v = hf {
             return v[key]?.Double
         }
@@ -75,7 +75,7 @@ public struct Config {
         return file!.Number(k) ?? file!.Integer(k).map { float64($0) }
     }
 
-    public func Bool(_ key: string, gguf: string? = nil) -> bool? {
+    public func Bool(key: string, gguf: string? = nil) -> bool? {
         if let v = hf {
             return v[key]?.Bool
         }
@@ -83,7 +83,7 @@ public struct Config {
         return file!.Flag(k)
     }
 
-    public func String(_ key: string, gguf: string? = nil) -> string? {
+    public func String(key: string, gguf: string? = nil) -> string? {
         if let v = hf {
             return v[key]?.String
         }
@@ -92,7 +92,7 @@ public struct Config {
     }
 
     /// Ints is an integer list: config.json's eos_token_id may be one.
-    public func Ints(_ key: string, gguf: string? = nil) -> [int]? {
+    public func Ints(key: string, gguf: string? = nil) -> [int]? {
         if let v = hf {
             guard let x = v[key] else { return nil }
             if let n = x.Int {
@@ -114,7 +114,7 @@ public struct Config {
     }
 
     // ggufKey is the GGUF key an HF key is asked as.
-    func ggufKey(_ key: string, _ override: string?) -> string? {
+    func ggufKey(key: string, override: string?) -> string? {
         guard let k = override ?? keys[key] else {
             return nil
         }
